@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חנות חכמה - קטלוג מוצרים</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="main-nav">
+            <div class="logo">
+                <h1>החנות שלי</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#hero">ראשי</a></li>
+                <li><a href="#catalog">קטלוג</a></li>
+                <li><a href="#contact">צור קשר</a></li>
+            </ul>
+            <div class="cart-icon" id="cartIcon">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="hero-section">
+            <div class="hero-content">
+                <h2>ברוכים הבאים לחנות החכמה שלנו!</h2>
+                <p>בנו הצעות מחיר בקלות ושתפו עם מחלקת ההזמנות.</p>
+                <a href="#catalog" class="btn-primary">צפו בקטלוג</a>
+            </div>
+        </section>
+
+        <section id="catalog" class="catalog-section">
+            <h2>המוצרים שלנו</h2>
+            <div class="product-grid">
+                </div>
+        </section>
+
+        <section id="contact" class="contact-section">
+            <h2>צור קשר</h2>
+            <p>לכל שאלה או בקשה, אל תהססו ליצור איתנו קשר.</p>
+            <form class="contact-form">
+                <input type="text" placeholder="שם מלא" required>
+                <input type="email" placeholder="אימייל" required>
+                <textarea placeholder="הודעה" rows="5" required></textarea>
+                <button type="submit" class="btn-primary">שלח הודעה</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 כל הזכויות שמורות לחנות החכמה שלי.</p>
+    </footer>
+
+    <div id="productDetailsPopup" class="popup-overlay">
+        <div class="popup-content product-popup-content">
+            <button class="close-popup-btn">&times;</button>
+            <div class="popup-body">
+                </div>
+        </div>
+    </div>
+
+    <div id="cartPopup" class="popup-overlay">
+        <div class="popup-content cart-popup-content">
+            <button class="close-popup-btn">&times;</button>
+            <h2>עגלת הקניות שלך</h2>
+            <div class="cart-items">
+                </div>
+            <div class="cart-summary">
+                <p>סה"כ: <span id="cartTotal">0.00</span> ₪</p>
+            </div>
+            <div class="cart-actions">
+                <button class="btn-primary" id="checkoutBtn">בנה הצעת מחיר</button>
+                <button class="btn-secondary close-popup-btn">המשך קניות</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="quotePopup" class="popup-overlay">
+        <div class="popup-content quote-popup-content">
+            <button class="close-popup-btn">&times;</button>
+            <h2>הצעת המחיר שלך</h2>
+            <div class="quote-details">
+                </div>
+            <div class="quote-share-form">
+                <h3>פרטי קשר לשליחה:</h3>
+                <input type="text" id="customerName" placeholder="שם הלקוח" required>
+                <input type="email" id="customerEmail" placeholder="אימייל לשליחה" required>
+                <textarea id="quoteNotes" placeholder="הערות להצעה (אופציונלי)" rows="3"></textarea>
+                <button class="btn-primary" id="sendQuoteBtn">שלח למחלקת הזמנות</button>
+                <button class="btn-secondary" id="downloadPdfBtn">הורד כ-PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
