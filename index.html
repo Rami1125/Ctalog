@@ -3,100 +3,2162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>חנות חכמה - קטלוג מוצרים</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>קטלוג פרימיום אינטראקטיבי - ח.סבן חומרי בניין</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Assistant', sans-serif;
+            background: linear-gradient(to bottom right, #e0f2f7, #ffffff); /* Light blue to white gradient */
+            color: #1a202c; /* Darker text for contrast */
+            overflow-x: hidden; /* Prevent horizontal scroll due to animations */
+        }
+        .main-container {
+            direction: rtl;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn-primary {
+            @apply bg-gradient-to-br from-blue-500 to-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105;
+        }
+        .btn-secondary {
+            @apply bg-white bg-opacity-80 text-blue-700 font-bold py-2 px-6 rounded-full border border-blue-300 hover:bg-blue-100 transition-all duration-300;
+        }
+        .product-card {
+            @apply bg-white bg-opacity-90 rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 cursor-pointer border border-blue-100;
+        }
+        .product-card:hover {
+             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+             border-color: #90CAF9; /* Subtle highlight on hover */
+        }
+
+        /* Modal specific styles for animation and centering */
+        .modal {
+            @apply fixed inset-0 flex items-center justify-center p-4 z-50;
+            background: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.4s ease-in-out;
+        }
+        .modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .modal-content-wrapper {
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); /* Slightly longer transition */
+            transform: scale(0.8) translateY(20px); /* Start slightly smaller and lower */
+            opacity: 0;
+        }
+        .modal:not(.hidden) .modal-content-wrapper {
+            transform: scale(1) translateY(0); /* End at full size and center */
+            opacity: 1;
+        }
+        .modal-content, .advisor-modal-content, .gallery-modal-content, .keyboard-modal-content {
+            @apply glass-effect rounded-3xl shadow-2xl w-full max-h-[95vh] flex flex-col relative;
+            background-image: url('https://i0.wp.com/saban94.wordpress.com/wp-content/uploads/2020/01/cropped-22489661_366092580492942_6527060566628824285_n-1.jpg?resize=200%2C200&ssl=1');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: 50%; /* Adjusted for better visibility */
+            background-blend-mode: overlay; /* Blends logo with background */
+        }
+        .modal-content > *, .advisor-modal-content > *, .gallery-modal-content > *, .keyboard-modal-content > * {
+             position: relative; /* Ensure content is above the background image */
+             z-index: 10;
+        }
+        .modal-content::before, .advisor-modal-content::before, .gallery-modal-content::before, .keyboard-modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9); /* Opaque white layer over background image */
+            backdrop-filter: blur(10px); /* Ensures a good glass effect */
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: inherit; /* Inherit rounded corners */
+            z-index: 5; /* Below content, above background image */
+        }
+        
+        /* Specific modal header adjustments */
+        .modal-content header, .advisor-modal-header, .gallery-modal-header, .keyboard-modal-header {
+             z-index: 11; /* Ensure headers are always on top */
+             position: relative;
+        }
+
+
+        /* Updated Tab Buttons with Glass Effect */
+        .tab-button {
+            @apply px-5 py-3 text-lg font-semibold rounded-xl shadow-sm cursor-pointer; /* More rounded, subtle shadow */
+            @apply ml-4; /* Add spacing between buttons */
+            background: rgba(255, 255, 255, 0.8); /* Slightly more opaque glass */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5); /* Lighter border for glass look */
+            color: #2563EB; /* Blue text for normal state */
+            transition: all 0.3s ease-in-out;
+        }
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.95); /* More opaque on hover */
+            border-color: #90CAF9; /* Light blue border on hover */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Stronger shadow on hover */
+        }
+        .tab-button.active {
+            @apply bg-blue-600 text-white shadow-md border-blue-600; /* Active state: strong blue background, white text, solid border */
+            box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3); /* Even stronger shadow for active */
+        }
+
+        .typing-effect::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            from, to { color: transparent }
+            50% { color: #2563EB; } /* Blue for typing effect */
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
+        ::-webkit-scrollbar-thumb { background: #90CAF9; border-radius: 4px; } /* Light blue scrollbar */
+        ::-webkit-scrollbar-thumb:hover { background: #2196F3; } /* Darker blue on hover */
+
+        /* New Advisor Modal Styles - Adjusted for clarity and text size */
+        .advisor-modal-content {
+            background: rgba(255, 255, 255, 0.95); /* More opaque white */
+            border: 1px solid rgba(173, 216, 230, 0.7); /* Light blue border */
+            @apply rounded-3xl shadow-2xl w-full max-w-3xl max-h-[95vh] flex flex-col;
+        }
+        .advisor-modal-header {
+            @apply bg-gradient-to-br from-[#ADD8E6] to-[#87CEEB] text-white p-6 rounded-t-3xl;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+            font-size: 2.25rem; /* text-4xl */
+            font-weight: 700; /* font-bold */
+        }
+        .advisor-input-area {
+            @apply bg-white bg-opacity-90 border border-blue-300 focus:ring-2 focus:ring-blue-500 text-lg; /* Larger text */
+        }
+        .advisor-response-area {
+            @apply bg-blue-50 bg-opacity-70 border border-blue-200 text-blue-800 text-lg; /* Larger text */
+        }
+        .advisor-loading-spinner {
+            border-color: #87CEEB;
+            border-top-color: transparent;
+        }
+        .chat-message {
+            @apply p-4 rounded-xl my-2 max-w-[85%] text-lg; /* Larger padding, bolder radius, larger text */
+            line-height: 1.6; /* Improved readability */
+        }
+        .chat-message.user {
+            @apply bg-blue-100 text-blue-900 self-end ml-auto shadow-md; /* Subtle shadow */
+        }
+        .chat-message.ai {
+            @apply bg-gray-100 text-gray-800 self-start mr-auto shadow-md; /* Subtle shadow */
+        }
+        .chat-message.ai strong {
+            color: #2563EB; /* Make strong text blue in AI responses */
+        }
+        .chat-options-container {
+            @apply flex flex-wrap gap-3 mt-4; /* Larger gap */
+        }
+        .chat-option-button {
+            @apply bg-blue-200 text-blue-800 px-4 py-2 rounded-full text-base hover:bg-blue-300 transition-colors shadow-sm; /* Larger padding, base text */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: rgba(255,255,255,0.7);
+            border-radius: 0.75rem; /* rounded-xl */
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: right;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-size: 1rem; /* Base font size for tables */
+        }
+        th {
+            background-color: #e0f2f7; /* Light blue header */
+            font-weight: bold;
+            color: #2563eb;
+        }
+        /* Gallery modal specific styles */
+        .gallery-modal-content {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(173, 216, 230, 0.7);
+            @apply rounded-3xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col;
+        }
+        .gallery-image-card {
+            @apply bg-white rounded-lg shadow-md overflow-hidden border border-blue-100;
+        }
+        .gallery-image-card img {
+            @apply w-full h-40 object-cover;
+        }
+
+        /* H.Saban logo frame */
+        .saban-logo-frame {
+            @apply p-2 rounded-full bg-white bg-opacity-70 shadow-lg border border-blue-200;
+        }
+
+        /* Product Datasheet Button */
+        .btn-datasheet {
+            @apply bg-green-500 text-white font-bold py-2 px-5 rounded-full shadow-md hover:bg-green-600 transition-colors text-sm;
+        }
+
+        /* Virtual Keyboard */
+        .keyboard-modal {
+            @apply fixed bottom-0 left-0 right-0 p-4 z-50;
+            background: rgba(0, 0, 0, 0.6);
+            transition: all 0.4s ease-in-out;
+            transform: translateY(100%);
+            opacity: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .keyboard-modal.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .keyboard-modal-content {
+            @apply bg-white bg-opacity-95 rounded-t-3xl shadow-2xl w-full max-w-4xl p-6 flex flex-col;
+            border-top: 1px solid rgba(173, 216, 230, 0.7);
+            z-index: 55; /* Higher than other modals to ensure it's on top */
+            background-image: url('https://i0.wp.com/saban94.wordpress.com/wp-content/uploads/2020/01/cropped-22489661_366092580492942_6527060566628824285_n-1.jpg?resize=200%2C200&ssl=1');
+            background-repeat: no-repeat;
+            background-position: center bottom;
+            background-size: 30%;
+            background-blend-mode: overlay;
+        }
+        .keyboard-layout {
+            display: grid;
+            gap: 8px;
+            grid-template-columns: repeat(10, 1fr); /* Default 10 columns */
+        }
+        .keyboard-layout.hebrew {
+            grid-template-columns: repeat(11, 1fr); /* Hebrew has more keys in top row */
+        }
+        .keyboard-key {
+            @apply bg-blue-100 text-blue-800 font-semibold p-3 rounded-lg shadow-sm hover:bg-blue-200 active:bg-blue-300 transition-all text-xl flex items-center justify-center cursor-pointer;
+            min-width: 40px;
+            height: 55px; /* Fixed height for keys */
+        }
+        .keyboard-key.wide {
+            grid-column: span 2;
+        }
+        .keyboard-key.extra-wide {
+            grid-column: span 3;
+        }
+        .keyboard-key.space {
+            grid-column: span 5;
+        }
+        .keyboard-header {
+            @apply flex justify-between items-center pb-4 border-b border-blue-200 mb-4;
+        }
+        .keyboard-header button {
+            @apply text-blue-700 hover:text-blue-900 text-3xl font-bold;
+        }
+        .keyboard-header .lang-toggle {
+            @apply bg-blue-500 text-white px-3 py-1 rounded-full text-base font-semibold hover:bg-blue-600 transition-colors;
+        }
+        .keyboard-header .emoji-toggle {
+            @apply bg-yellow-400 text-gray-800 px-3 py-1 rounded-full text-base font-semibold hover:bg-yellow-500 transition-colors;
+        }
+
+        /* Focus state for input with keyboard */
+        .input-with-keyboard-active {
+             outline: 2px solid #2563EB;
+             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3);
+             border-color: #2563EB;
+             transform: translateY(-50px); /* Move input up to center with keyboard below */
+             transition: transform 0.3s ease-out;
+        }
+        .input-with-keyboard-active + .keyboard-modal {
+             transform: translateY(0);
+             opacity: 1;
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <nav class="main-nav">
-            <div class="logo">
-                <h1>החנות שלי</h1>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#hero">ראשי</a></li>
-                <li><a href="#catalog">קטלוג</a></li>
-                <li><a href="#contact">צור קשר</a></li>
-            </ul>
-            <div class="cart-icon" id="cartIcon">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="cart-count">0</span>
-            </div>
-        </nav>
-    </header>
+<body class="main-container">
 
-    <main>
-        <section id="hero" class="hero-section">
-            <div class="hero-content">
-                <h2>ברוכים הבאים לחנות החכמה שלנו!</h2>
-                <p>בנו הצעות מחיר בקלות ושתפו עם מחלקת ההזמנות.</p>
-                <a href="#catalog" class="btn-primary">צפו בקטלוג</a>
-            </div>
-        </section>
-
-        <section id="catalog" class="catalog-section">
-            <h2>המוצרים שלנו</h2>
-            <div class="product-grid">
+    <div id="app" class="min-h-screen">
+        <header class="glass-effect shadow-md p-4 flex justify-between items-center sticky top-0 z-40">
+            <div class="flex items-center">
+                <div class="saban-logo-frame">
+                    <img src="https://i0.wp.com/saban94.wordpress.com/wp-content/uploads/2020/01/cropped-22489661_366092580492942_6527060566628824285_n-1.jpg?resize=200%2C200&ssl=1" alt="לוגו ח.סבן" class="h-16 w-16 rounded-full object-cover">
                 </div>
-        </section>
-
-        <section id="contact" class="contact-section">
-            <h2>צור קשר</h2>
-            <p>לכל שאלה או בקשה, אל תהססו ליצור איתנו קשר.</p>
-            <form class="contact-form">
-                <input type="text" placeholder="שם מלא" required>
-                <input type="email" placeholder="אימייל" required>
-                <textarea placeholder="הודעה" rows="5" required></textarea>
-                <button type="submit" class="btn-primary">שלח הודעה</button>
-            </form>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 כל הזכויות שמורות לחנות החכמה שלי.</p>
-    </footer>
-
-    <div id="productDetailsPopup" class="popup-overlay">
-        <div class="popup-content product-popup-content">
-            <button class="close-popup-btn">&times;</button>
-            <div class="popup-body">
+                <h1 class="text-3xl font-bold text-blue-800 mr-3">ח.סבן חומרי בניין</h1>
+            </div>
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <div class="relative">
+                    <input id="searchInput" type="text" placeholder="הקלד לחיפוש מוצר..." class="w-64 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 glass-effect text-lg">
+                    <span id="searchIcon" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
                 </div>
-        </div>
+                <button id="projectAdvisorButton" class="btn-secondary">✨ יועץ מוצר מתקדם ✨</button>
+                <button id="showGalleryButton" class="btn-secondary">🖼️ גלריית סניפים</button>
+                <button id="cartButton" class="relative btn-secondary">
+                    🛒
+                    <span id="cartCount" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">0</span>
+                    <span class="mr-2">הזמנה</span>
+                </button>
+                 <button id="scanBarcode" class="btn-secondary">סריקת ברקוד</button>
+            </div>
+        </header>
+
+        <main class="p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <aside class="lg:col-span-1 glass-effect p-6 rounded-2xl shadow-lg h-fit sticky top-24">
+                <h2 class="text-2xl font-bold mb-6 border-b border-gray-300 pb-3 text-blue-800">סינון מוצרים</h2>
+                <div id="filters">
+                    <div>
+                        <h3 class="font-bold text-xl mb-3 text-blue-700">קטגוריה</h3>
+                        <div id="categoryFilters" class="space-y-2 text-lg"></div>
+                    </div>
+                    <div class="mt-8">
+                        <h3 class="font-bold text-xl mb-3 text-blue-700">מותג</h3>
+                        <div id="brandFilters" class="space-y-2 text-lg"></div>
+                    </div>
+                     <div class="mt-8">
+                        <button id="clearFilters" class="w-full btn-secondary">נקה סינונים</button>
+                    </div>
+                </div>
+            </aside>
+
+            <section id="productGrid" class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            </section>
+        </main>
     </div>
 
-    <div id="cartPopup" class="popup-overlay">
-        <div class="popup-content cart-popup-content">
-            <button class="close-popup-btn">&times;</button>
-            <h2>עגלת הקניות שלך</h2>
-            <div class="cart-items">
-                </div>
-            <div class="cart-summary">
-                <p>סה"כ: <span id="cartTotal">0.00</span> ₪</p>
-            </div>
-            <div class="cart-actions">
-                <button class="btn-primary" id="checkoutBtn">בנה הצעת מחיר</button>
-                <button class="btn-secondary close-popup-btn">המשך קניות</button>
-            </div>
+    <div id="productModal" class="modal hidden">
+        <div id="modalContentWrapper" class="modal-content-wrapper w-full max-w-5xl">
+             <!-- Content will be injected by JS -->
         </div>
     </div>
-
-    <div id="quotePopup" class="popup-overlay">
-        <div class="popup-content quote-popup-content">
-            <button class="close-popup-btn">&times;</button>
-            <h2>הצעת המחיר שלך</h2>
-            <div class="quote-details">
+    
+    <div id="cartModal" class="modal hidden">
+         <div class="modal-content-wrapper w-full max-w-2xl">
+            <div class="modal-content">
+                 <header class="p-6 border-b border-gray-300 flex justify-between items-center bg-gradient-to-br from-[#ADD8E6] to-[#87CEEB] text-white rounded-t-3xl">
+                    <h2 class="text-3xl font-bold">ההזמנה שלי</h2>
+                    <button id="closeCartModal" class="text-3xl font-bold text-white hover:text-red-300 transition-colors">&times;</button>
+                </header>
+                <div id="cartItemsContainer" class="p-6 overflow-y-auto flex-grow text-lg">
                 </div>
-            <div class="quote-share-form">
-                <h3>פרטי קשר לשליחה:</h3>
-                <input type="text" id="customerName" placeholder="שם הלקוח" required>
-                <input type="email" id="customerEmail" placeholder="אימייל לשליחה" required>
-                <textarea id="quoteNotes" placeholder="הערות להצעה (אופציונלי)" rows="3"></textarea>
-                <button class="btn-primary" id="sendQuoteBtn">שלח למחלקת הזמנות</button>
-                <button class="btn-secondary" id="downloadPdfBtn">הורד כ-PDF</button>
+                <footer class="p-6 border-t border-blue-200 bg-white bg-opacity-90 rounded-b-3xl">
+                     <h3 class="text-2xl font-bold mb-4 text-blue-700">פרטי מילוי הזמנה</h3>
+                     <form id="orderForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <input type="text" placeholder="שם מלא" id="customerName" class="p-3 border rounded-lg bg-white bg-opacity-90 border-blue-300 focus:ring-2 focus:ring-blue-500 text-lg" required>
+                         <input type="tel" placeholder="מספר טלפון" id="customerPhone" class="p-3 border rounded-lg bg-white bg-opacity-90 border-blue-300 focus:ring-2 focus:ring-blue-500 text-lg" required>
+                         <textarea placeholder="הערות להזמנה..." rows="2" id="orderNotes" class="p-3 border rounded-lg md:col-span-2 bg-white bg-opacity-90 border-blue-300 focus:ring-2 focus:ring-blue-500 text-lg"></textarea>
+                         <button type="submit" class="btn-primary md:col-span-2 mt-2">שלח הזמנה לוואטסאפ</button>
+                     </form>
+                </footer>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="projectAdvisorModal" class="modal hidden">
+        <div class="modal-content-wrapper w-full max-w-3xl">
+            <div class="advisor-modal-content">
+                <header class="advisor-modal-header flex justify-between items-center">
+                    <h2 class="text-3xl font-bold text-white">✨ יועץ מוצר מתקדם ✨</h2>
+                    <button id="closeProjectAdvisorModal" class="text-3xl font-bold text-white hover:text-red-300 transition-colors">&times;</button>
+                </header>
+                <div id="advisorChatHistory" class="p-6 flex-grow overflow-y-auto flex flex-col items-start">
+                    <!-- Chat messages will be injected here -->
+                </div>
+                <footer class="p-6 border-t border-blue-200 bg-white bg-opacity-90 rounded-b-3xl">
+                    <div class="mb-4">
+                        <textarea id="projectAdvisorInput" class="advisor-input-area w-full p-3 border rounded-lg h-20 resize-none" placeholder="תאר את הפרויקט שלך או שאל שאלה על חומרים..."></textarea>
+                    </div>
+                    <div class="flex justify-between gap-4 mt-2">
+                        <button id="getAdvisorAdvice" class="btn-primary flex-grow">קבל ייעוץ</button>
+                        <button id="summarizeChatButton" class="btn-secondary px-6 py-3">✨ סכם שיחה ✨</button>
+                    </div>
+                    <div id="advisorLoading" class="hidden mt-4 text-center text-blue-600 text-lg">
+                        <span class="inline-block h-6 w-6 border-4 border-t-4 rounded-full animate-spin advisor-loading-spinner mr-2"></span>
+                        <span class="mr-2">טוען ייעוץ...</span>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <div id="galleryModal" class="modal hidden">
+        <div class="modal-content-wrapper w-full max-w-5xl">
+            <div class="gallery-modal-content">
+                <header class="advisor-modal-header flex justify-between items-center">
+                    <h2 class="text-3xl font-bold text-white">🖼️ גלריית סניפים</h2>
+                    <button id="closeGalleryModal" class="text-3xl font-bold text-white hover:text-red-300 transition-colors">&times;</button>
+                </header>
+                <div class="p-6 flex flex-col flex-grow overflow-hidden">
+                    <div class="flex justify-center mb-6 gap-3">
+                        <button data-branch-filter="all" class="btn-secondary active-filter-btn">הכל</button>
+                        <button data-branch-filter="החרש" class="btn-secondary">סניף החרש</button>
+                        <button data-branch-filter="התלמיד" class="btn-secondary">סניף התלמיד</button>
+                    </div>
+                    <div id="galleryImageContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto flex-grow">
+                        <!-- Gallery images will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="virtualKeyboard" class="keyboard-modal">
+        <div class="keyboard-modal-content">
+            <div class="keyboard-header">
+                <button id="closeKeyboard" class="text-gray-600 hover:text-red-500">&#x2715;</button>
+                <div class="flex gap-2">
+                    <button id="toggleLang" class="lang-toggle">עב/EN</button>
+                    <button id="toggleEmoji" class="emoji-toggle">😀</button>
+                </div>
+            </div>
+            <div id="keyboardLayout" class="keyboard-layout">
+                <!-- Keys will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial product data (will be enhanced with images dynamically)
+        const products = [
+            {
+                id: 1,
+                name: "תרמוקיר טיח תרמי 300",
+                brand: "תרמוקיר",
+                brand_logo_url: "https://termokir.co.il/logo.png",
+                image: "https://termokir.co.il/wp-content/uploads/2020/05/th300-lca-218x345.jpg", // Updated image
+                category: "טיח",
+                description: "טיח תרמי איכותי לבידוד תרמי של מבנים, עומד בתקנים מחמירים.",
+                datasheet_url: "https://termokir.co.il/product/%D7%98%D7%99%D7%97-%D7%AA%D7%A8%D7%9E%D7%99-300-th/",
+                specs: {
+                    "צפיפות יבשה": "פחות מ-300 ק\"ג/מ\"ק",
+                    "מוליכות תרמית": "0.085 W/(m*k)",
+                    "חוזק לחיצה (28 יום)": "מעל 1.0 מגפ\"ס",
+                    "צריכה אופיינית": "0.5-1.4 מ\"ר/שק (תלוי בעובי)",
+                    "תקנים": "ת\"י 1414, ת\"י 1045, ת\"י 5282, תו ירוק",
+                },
+                application: [
+                    "יש לנקות ולשטוף את התשתית יום לפני היישום.",
+                    "לערבב 11-12 ליטר מים עם שק 25 ק\"ג עד לקבלת עיסה אחידה.",
+                    "להמתין 5 דקות ולערבב שוב.",
+                    "ליישם שכבה דקה ומהודקת, ולאחר מכן להשלים לעובי הנדרש (20-70 מ\"מ).",
+                    "במערכת מורכבת, יש ליישם 48 שעות לאחר שכבת טיח תרמי 400 TH, ו-72 שעות לפני שליכט בגר."
+                ],
+                drying: {
+                    "זמן שמישות לעבודה": "כשעה",
+                    "בין שכבות במערכת": "48-72 שעות",
+                    "חשיפה למים": "יש להימנע בתקופת הייבוש הראשונית"
+                },
+                calculator: {
+                    type: 'coverage_thickness_kg',
+                    unit: 'שקים',
+                    bag_weight_kg: 25,
+                    coverage_per_sqm_per_mm_kg: 0.3,
+                    min_thickness_mm: 20,
+                    max_thickness_mm: 70
+                },
+                related_products_ids: []
+            },
+            {
+                id: 2,
+                name: "תרמוקיר דבק AD 603",
+                brand: "תרמוקיר",
+                brand_logo_url: "https://termokir.co.il/logo.png",
+                image: "https://termokir.co.il/wp-content/uploads/2014/01/0005_AD603.jpg", // Updated image
+                category: "דבקים לריצוף",
+                description: "דבק צמנטי גמיש להדבקת אריחים, סיווג C2TE S1.",
+                datasheet_url: "https://termokir.co.il/product/%D7%93%D7%91%D7%A7-ad-603/",
+                specs: {
+                    "סיווג": "C2TE S1",
+                    "חוזק הידבקות במתיחה": "מעל 1.0-1.5 מגפ\"S",
+                    "עיווי רוחבי (גמישות)": "> 2.5 מ\"מ",
+                    "עובי יישום": "5-10 מ\"מ",
+                    "תקנים": "ת\"י 4004, ת\"י 1555, תו ירוק",
+                },
+                application: [
+                    "לערבב כ-6.5 ליטר מים עם שק 25 ק\"ג.",
+                    "למרוח שכבה דקה ומהודקת על התשתית ועל גב האריח.",
+                    "לסרק שכבה נוספת על התשתית במאלג' משונן.",
+                    "להצמיד את האריח בשיטת 'רטוב על רטוב' ולהדק."
+                ],
+                drying: {
+                    "זמן שמישות לעבודה": "כשעה",
+                    "זמן פתוח": "30 דקות",
+                    "אי-חשיפה למים": "72 שעות לפחות"
+                },
+                calculator: {
+                    type: 'coverage_thickness_kg',
+                    unit: 'שקים',
+                    bag_weight_kg: 25,
+                    coverage_per_sqm_per_mm_kg: 1.40,
+                    min_thickness_mm: 5,
+                    max_thickness_mm: 10
+                },
+                related_products_ids: [9] // רובה
+            },
+            {
+                id: 3,
+                name: "כרמית דבק גמיש 116",
+                brand: "כרמית מיסטר פיקס",
+                brand_logo_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Karmit_logo.svg/320px-Karmit_logo.svg.png",
+                category: "דבקים לריצוף",
+                description: "דבק צמנטי גמיש במיוחד להדבקת כל סוגי האריחים, סיווג C2TE-S1.",
+                datasheet_url: "https://www.karmit.co.il/product/%D7%93%D7%91%D7%A7-%D7%90%D7%A8%D7%99%D7%97%D7%99%D7%9D-%D7%97%D7%92%D7%9E%D7%99%D7%A9-116-c2te-s1/",
+                specs: {
+                    "סיווג": "C2TE-S1",
+                    "חוזק הידבקות במתיחה": "מעל 1 מגפ\"ס",
+                    "החלקה אנכית": "פחות מ-0.5 מ\"מ",
+                    "עובי יישום": "4-10 מ\"מ",
+                    "תקנים": "ת\"י 1555, ת\"י 4004, ת\"י 2378, תו ירוק",
+                },
+                application: [
+                    "לערבב 8-8.5 ליטר מים עם שק 25 ק\"ג.",
+                    "על תשתיות לא סופגות, יש ליישם פריימר 82-P ולהמתין 90 דקות.",
+                    "למרוח 100% כיסוי על גב האריח.",
+                    "להצמיד לתשתית, לטלטל ולהדק עם פטיש גומי."
+                ],
+                drying: {
+                    "זמן שמישות לעבודה": "עד 3 שעות",
+                    "זמן פתוח": "30 דקות",
+                    "אי-חשיפה למים": "24 שעות"
+                },
+                calculator: {
+                    type: 'coverage_thickness_kg',
+                    unit: 'שקים',
+                    bag_weight_kg: 25,
+                    coverage_per_sqm_per_mm_kg: 1.5,
+                    min_thickness_mm: 4,
+                    max_thickness_mm: 10
+                },
+                related_products_ids: [9] // רובה
+            },
+            {
+                id: 4,
+                name: "טמבור טיח צמנטי 984",
+                brand: "טמבור",
+                brand_logo_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Tambour_logo.svg/320px-Tambour_logo.svg.png",
+                category: "טיח",
+                description: "טיח על בסיס צמנט ליישור קירות ותקרות במרחבים מוגנים (ממ\"ד).",
+                datasheet_url: "https://www.tambour.co.il/product/%D7%98%D7%99%D7%97-%D7%A6%D7%9E%D7%A0%D7%98%D7%99-984/",
+                specs: {
+                    "צריכה אופיינית": "1.7 ק\"ג/מ\"ר לעובי 1 מ\"מ",
+                    "שימוש": "קירות פנים וחוץ, ממ\"דים",
+                    "תקנים": "ת\"י 5075, EPD, ISO14001",
+                },
+                application: [
+                    "מתאים ליישום על בטון, בלוקים וטיח קיים.",
+                    "יש להקפיד על תשתית נקייה ויציבה.",
+                    "מיועד ליישום ידני או במכונה."
+                ],
+                drying: {
+                    "זמן ייבוש סופי": "28 יום"
+                },
+                calculator: {
+                    type: 'coverage_thickness_kg',
+                    unit: 'שקים',
+                    bag_weight_kg: 25,
+                    coverage_per_sqm_per_mm_kg: 1.7,
+                    min_thickness_mm: 10,
+                    max_thickness_mm: 30
+                },
+                related_products_ids: [1,5] // טיח תרמי, שליכט
+            },
+            {
+                id: 5,
+                name: "נירלט שליכט EXTRA M100",
+                brand: "נירלט",
+                brand_logo_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Nirlat_logo.svg/320px-Nirlat_logo.svg.png",
+                category: "טיח",
+                description: "שליכט אקרילי גמיש בגימור מט, עמיד בתנאי אקלים קשים.",
+                datasheet_url: "https://www.nirlat.com/product/%D7%A9%D7%9C%D7%99%D7%9B%D7%98-extra-m100/",
+                specs: {
+                    "כושר כיסוי": "משתנה לפי מרקם (כ-2 ק\"ג/מ\"ר)",
+                    "גישור על סדקים": "עד 1 מ\"מ",
+                    "תקנים": "ת\"י 1731",
+                },
+                application: [
+                    "יש ליישם שכבת פריימר ולהמתין 6 שעות לייבוש.",
+                    "לבחוש היטב לפני השימוש.",
+                    "ליישם באמצעות מאלג' מתכת ולשפשף במאלג' פלסטיק."
+                ],
+                drying: {
+                    "ייבוש למגע": "3-4 שעות",
+                    "ייבוש סופי": "72 שעות",
+                    "הגבלות": "לא ליישם בטמפ' מתחת ל-7°C או מעל 35°C, או אם צפוי גשם/אבק ב-72 השעות הקרובות."
+                },
+                calculator: {
+                    type: 'coverage_kg',
+                    unit: 'דליים',
+                    coverage_per_sqm: 2.0,
+                    bag_weight_kg: 24
+                },
+                related_products_ids: [4] // טיח
+            },
+            {
+                id: 6,
+                name: "בוש מברגה/מקדחה GSB 185-LI",
+                brand: "בוש",
+                brand_logo_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Bosch_logo.svg/320px-Bosch_logo.svg.png",
+                category: "כלי עבודה",
+                description: "מברגה/מקדחה רוטטת נטענת, 18V, קומפקטית עם מנוע ללא פחמים.",
+                datasheet_url: "https://www.bosch-professional.com/il/he/products/gsb-185-li-06019K3100",
+                specs: {
+                    "מתח": "18V",
+                    "מומנט (רך/קשה)": "21/50 Nm",
+                    "מהירות סיבוב": "0-500 / 0-1,900 סל\"ד",
+                    "קצב הלימה": "27,000 פל\"ד",
+                    "מנוע": "ללא פחמים (Brushless)"
+                },
+                application: [
+                    "הברגת ברגים בעץ עד 10 מ\"מ.",
+                    "קידוח בעץ עד 35 מ\"מ, במתכת או בנייה עד 10 מ\"מ."
+                ],
+                drying: {},
+                warranty: "12 חודשים (ניתן להרחיב לשנתיים נוספות ברישום)",
+                related_products_ids: [7] // אימפקט
+            },
+            {
+                id: 7,
+                name: "מקיטה אימפקט DTD152Z",
+                brand: "מקיטה",
+                brand_logo_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Makita_logo.svg/320px-Makita_logo.svg.png",
+                category: "כלי עבודה",
+                description: "מברגת אימפקט 18V חזקה ואמינה לעבודות מאומצות (גוף בלבד).",
+                datasheet_url: "https://www.makita.co.il/product/%D7%9E%D7%91%D7%A8%D7%92%D7%AA-%D7%90%D7%99%D7%9E%D7%A4%D7%A7%D7%98-18V-DTD152Z/",
+                specs: {
+                    "מתח": "18V",
+                    "מהירות סיבוב": "0-2,900 סל\"ד",
+                    "רטיטות לדקה": "0-3,500 פל\"ד",
+                    "מומנט פיתול מרבי": "165 Nm",
+                    "טכנולוגיה": "XPT - הגנה מאבק ומים"
+                },
+                application: [
+                    "אידיאלית להידוק ברגים, עבודות דק ופרגולות.",
+                    "מנגנון אימפקט מפחית את העומס על המשתמש."
+                ],
+                drying: {},
+                warranty: "24 חודשים (יבואן רשמי)",
+                related_products_ids: [6] // מברגה/מקדחה
+            },
+            {
+                id: 8,
+                name: "טמבור לוח גבס לבן",
+                brand: "טמבור",
+                brand_logo_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Tambour_logo.svg/320px-Tambour_logo.svg.png",
+                category: "מוצרי גבס",
+                description: "לוח גבס סטנדרטי לבניית מחיצות, תקרות וחיפויים בבנייה קלה.",
+                datasheet_url: "https://www.tambour.co.il/product/%D7%9C%D7%95%D7%97-%D7%92%D7%91%D7%A1-%D7%9C%D7%91%D7%9F/",
+                specs: {
+                    "עובי סטנדרטי": "12.7 מ\"מ (זמין בעוביים נוספים)",
+                    "מידות": "1200x2600/3000 מ\"M",
+                    "תקנים": "ת\"י 1490, ת\"י 62088, תו ירוק, ISO14001"
+                },
+                application: [
+                    "יש להתקין על קונסטרוקציית פח מגולוון (ניצבים ומסלולים).",
+                    "יש להשתמש בברגים ייעודיים לגבס.",
+                    "חיבורי הלוחות מטופלים בשפכטל וסרט שריון."
+                ],
+                drying: {},
+                related_products_ids: []
+            },
+            {
+                id: 9,
+                name: "תרמוקיר רובה SAKRET JF 930",
+                brand: "תרמוקיר",
+                brand_logo_url: "https://termokir.co.il/logo.png",
+                category: "רובה",
+                description: "רובה אקרילית איכותית למילוי מישקים ברוחב 3-10 מ\"מ, סיווג CG2 WA.",
+                datasheet_url: "https://termokir.co.il/product/%D7%A8%D7%95%D7%91%D7%94-sakret-jf-930/",
+                specs: {
+                    "סיווג": "CG2 WA",
+                    "חוזק לחיצה (28 יום)": "מעל 15.0 מגפ\"ס",
+                    "עמידות לשחיקה": "גבוהה (< 1000 מ\"מ³)",
+                    "ספיגות מים": "מופחתת",
+                    "תקנים": "ת\"י 1661, ת\"י 1555, תו ירוק, EPD"
+                },
+                application: [
+                    "לערבב עם כ-4 ליטר מים לשק 15 ק\"ג.",
+                    "ליישם במאלג' גומי בזווית אלכסונית למישקים.",
+                    "לאחר 10-30 דקות, לנקות עודפים עם ספוג לח."
+                ],
+                drying: {
+                    "דריכה קלה": "2-3 שעות",
+                    "שימוש רגיל": "48 שעות",
+                    "אי-חשיפה למים": "6 שעות לפחות"
+                },
+                calculator: {
+                    type: 'grout_calculator',
+                    unit: 'שקים',
+                    bag_weight_kg: 15,
+                    grout_density_factor: 1.8,
+                    default_tile_length_mm: 600,
+                    default_tile_width_mm: 600,
+                    default_joint_width_mm: 5,
+                    default_joint_depth_mm: 10
+                },
+                related_products_ids: [2,3,19] // דבקים לריצוף, מגב רובה
+            },
+            {
+                id: 10,
+                name: "סיקה Sikaflex-11 FC+",
+                brand: "סיקה",
+                brand_logo_url: "https://gilar.co.il/wp-content/themes/gilar/images/sika.svg",
+                category: "איטום",
+                description: "דבק-איטום פוליאוריטני רב תכליתי, עמיד בפני תזוזות ותנאי חוץ.",
+                datasheet_url: "https://isr.sika.com/he/construction/adhesives-sealants/sealants/sikaflexr-11-fc.html",
+                specs: {
+                    "בסיס כימי": "i-Cure® Technology polyurethane",
+                    "גמישות": "גבוהה (±35%)",
+                    "עמידות UV": "טובה",
+                    "טמפ' יישום": "+5°C עד +40°C"
+                },
+                application: [
+                    "לנקות היטב את המשטח מאבק, שומן ומזהמים.",
+                    "ליישם את החומר באמצעות אקדח ייעודי באופן רציף.",
+                    "להחליק את החומר תוך 10 דקות מרגע היישום."
+                ],
+                drying: {
+                    "קצב אשפרה": "כ-3 מ\"מ ב-24 שעות",
+                    "ייבוש למגע": "כ-70 דקות",
+                    "התקשות מלאה": "מספר ימים (תלוי בעובי)"
+                },
+                warranty: "מוגבל לטיב החומר",
+                related_products_ids: [11] // איטום נוסף
+            },
+            {
+                id: 11,
+                name: "סיקה SikaTop Seal-107",
+                brand: "סיקה",
+                brand_logo_url: "https://gilar.co.il/wp-content/themes/gilar/images/sika.svg",
+                category: "איטום",
+                description: "מערכת איטום צמנטית דו-רכיבית, גמישה במקצת, לאיטום והגנה על בטון.",
+                datasheet_url: "https://isr.sika.com/he/construction/waterproofing/waterproofing-below-ground/sikaflexr-1a.html", // Placeholder, find actual for Seal-107
+                specs: {
+                    "סיווג": "CM O2P (EN 1504-2)",
+                    "חוזק הידבקות": ">1.0 מגפ\"ס",
+                    "כושר גישור סדקים": ">0.75 מ\"מ",
+                    "צריכה": "כ-2.0 ק\"ג/מ\"ר/מ\"M (מומלץ 2 שכבות)"
+                },
+                application: [
+                    "לערבב רכיב A (נוזל) ו-B (אבקה) עד לקבלת תערובת אחידה.",
+                    "ליישם שכבה ראשונה במברשת, רולר או התזה.",
+                    "להמתין 4-8 שעות וליישם שכבה שנייה בניצב לראשונה."
+                ],
+                drying: {
+                    "בין שכבות": "4-8 שעות",
+                    "בדיקת הצפה": "72 שעות לפחות",
+                    "מוכנות לחיפוי": "7 ימים"
+                },
+                calculator: {
+                    type: 'coverage_kg',
+                    unit: 'יחידות',
+                    coverage_per_sqm: 4.0,
+                    bag_weight_kg: 20
+                },
+                related_products_ids: [10, 18, 19] // איטום נוסף, כלי עבודה
+            },
+            {
+                id: 12,
+                name: "חמת ברז מטבח נשלף סיטי",
+                brand: "חמת",
+                brand_logo_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRz-S4X7_S4z_D1h-j_z2sS1C2v2g7Qy1y_wQ&s",
+                category: "ברזים",
+                description: "ברז יוקרתי לכיור מטבח מבית חמת, עיצוב מודרני, פיה נשלפת וגימור ניקל מוברש.",
+                datasheet_url: "https://www.hamat.co.il/product/%D7%91%D7%A8%D7%96-%D7%9E%D7%98%D7%91%D7%97-%D7%A0%D7%A9%D7%9C%D7%A3-%D7%A1%D7%99%D7%98%D7%99/",
+                specs: {
+                    "חומר": "פליז בציפוי כרום/ניקל",
+                    "גימור": "ניקל מוברש / כרום / שחור מט",
+                    "פיה": "נשלפת עם 2 מצבי זרימה",
+                    "מנגנון": "מנגנון ספרדי איכותי",
+                    "אחריות": "7 שנים על גוף הברז ומנגנון"
+                },
+                application: [
+                    "ודא שנקודות המים החמים והקרים מוכנות.",
+                    "הצב את הברז בחור הייעודי בכיור או במשטח.",
+                    "חבר את צינורות הברז לנקודות הממים והדק.",
+                    "וודא אטימה מלאה של החיבורים לפני פתיחת זרם הממים הראשי."
+                ],
+                drying: {},
+                related_products_ids: [13] // אינטרפוץ
+            },
+            {
+                id: 13,
+                name: "חמת סט אינטרפוץ 4 דרך",
+                brand: "חמת",
+                brand_logo_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRz-S4X7_S4z_D1h-j_z2sS1C2v2g7Qy1y_wQ&s",
+                category: "אינסטלציה",
+                description: "סט מקלחת יוקרתי הכולל ראש גשם, מזלף ידני, ברז סוללה ואינטרפוץ 4 דרך.",
+                datasheet_url: "https://www.hamat.co.il/product/%D7%90%D7%99%D7%A0%D7%98%D7%A8%D7%A4%D7%95%D7%A5-4-%D7%93%D7%A8%D7%9B%D7%99%D7%9D/",
+                specs: {
+                    "חומר": "פליז בציפוי כרום",
+                    "גימור": "כרום / שחור מט",
+                    "ראש גשם": "עגול/מרובע, דק במיוחד",
+                    "מזלף": "מספר מצבי זרימה, אנטי אבנית",
+                    "אינטרפוץ": "4 דרך, מנגנון קרמי"
+                },
+                application: [
+                    "תכנן את מיקום נקודות הממים ונקז המקלחת בשלב בניית התשתית.",
+                    "התקן את יחידת האינטרפוץ בקיר לפי הוראות היצרן.",
+                    "חבר את הצנרת לראש הגשם ולמזלף הידני.",
+                    "לאחר סיום עבודות החיפוי, הרכב את הפריטים הגלויים."
+                ],
+                drying: {},
+                related_products_ids: [12] // ברז מטבח
+            },
+            {
+                id: 14,
+                name: "חול ים (למילוי/בנייה)",
+                brand: "כללי",
+                brand_logo_url: "", // No specific logo for "general"
+                category: "חומרי בניין בצובר",
+                description: "חול ים נקי ואיכותי למילוי, יציקות בטון, טיח ותשתיות ריצוף. נמכר בנפח של מעל 0.5 קוב.",
+                datasheet_url: "https://did.li/QQ4TY", // Example datasheet URL
+                specs: {
+                    "נפח אריזה": "מינימום 0.5 קוב (בלה)",
+                    "צבע": "בהיר-אפרפר",
+                    "גודל גרגר": "עדין-בינוני (0.2-2 מ\"מ)",
+                    "שימוש עיקרי": "מילוי, בטון, טיח, ריצוף"
+                },
+                application: [
+                    "למילוי: פריסה אחידה ושטיחה באמצעות כלים ייעודיים.",
+                    "לטיח: ערבוב עם צמנט ומים ליצירת טיט.",
+                    "לתשתית ריצוף: פריסה בשכבה אחידה והידוק."
+                ],
+                drying: {},
+                calculator: {
+                    type: 'volume_thickness_m3',
+                    unit: 'בלות',
+                    material_volume_per_sqm_per_mm: 0.001,
+                    min_thickness_mm: 50,
+                    max_thickness_mm: 300,
+                    volume_per_unit: 0.5 // 0.5 קוב לבלה
+                },
+                related_products_ids: [15,16,17,18] // סומסום, חצץ, טיט, מריצה
+            },
+            {
+                id: 15,
+                name: "סומסום (תשתית)",
+                brand: "כללי",
+                brand_logo_url: "",
+                category: "חומרי בניין בצובר",
+                description: "סומסום - חצץ דק בגודל 0-4 מ\"מ, אידיאלי לתשתיות ריצוף וניקוז. נמכר בנפח של מעל 0.5 קוב.",
+                datasheet_url: "https://did.li/QQ4TY", // Example datasheet URL
+                specs: {
+                    "נפח אריזה": "מינימום 0.5 קוב (בלה)",
+                    "צבע": "אפור-בז'",
+                    "גודל גרגר": "0-4 מ\"מ",
+                    "שימוש עיקרי": "תשתית ריצוף, שכבת ניקוז, ייצוב"
+                },
+                application: [
+                    "לפרוס בשכבה אחידה ומהודקת מעל תשתית קיימת.",
+                    "להידוק מומלץ שימוש במהדק אדמה (קומפקטור).",
+                    "לוודא שיפועים נכונים לניקוז."
+                ],
+                drying: {},
+                calculator: {
+                    type: 'volume_thickness_m3',
+                    unit: 'בלות',
+                    material_volume_per_sqm_per_mm: 0.001,
+                    min_thickness_mm: 50,
+                    max_thickness_mm: 150,
+                    volume_per_unit: 0.5
+                },
+                related_products_ids: [14,16,17,18] // חול, חצץ, טיט, מריצה
+            },
+            {
+                id: 16,
+                name: "חצץ (בטון/ניקוז)",
+                brand: "כללי",
+                brand_logo_url: "",
+                category: "חומרי בניין בצובר",
+                description: "חצץ נקי בגדלים שונים, אידיאלי ליציקות בטון, ניקוז ומילוי. נמכר בנפח של מעל 0.5 קוב.",
+                datasheet_url: "https://did.li/QQ4TY", // Example datasheet URL
+                specs: {
+                    "נפח אריזה": "מינימום 0.5 קוב (בלה)",
+                    "צבע": "אפור",
+                    "גודל גרגר": "משתנה (לדוגמה 20/40 מ\"מ)",
+                    "שימוש עיקרי": "בטון, ניקוז, מילוי, שבילי גישה"
+                },
+                application: [
+                    "ליציקות בטון: ערבוב עם צמנט וחול ביחסים מתאימים.",
+                    "לניקוז: פריסה בשכבה עבה בתחתית תעלות או כבסיס.",
+                    "למילוי: שימוש למילוי חללים גדולים."
+                ],
+                drying: {},
+                calculator: {
+                    type: 'volume_thickness_m3',
+                    unit: 'בלות',
+                    material_volume_per_sqm_per_mm: 0.001,
+                    min_thickness_mm: 100,
+                    max_thickness_mm: 500,
+                    volume_per_unit: 0.5
+                },
+                related_products_ids: [14,15,17,18] // חול, סומסום, טיט, מריצה
+            },
+            {
+                id: 17,
+                name: "טיט מוכן",
+                brand: "כללי",
+                brand_logo_url: "",
+                category: "חומרי בניין בצובר",
+                description: "טיט צמנטי מוכן לשימוש (יבש), מתאים לטיח, ריצוף ובנייה. נמכר בנפח של מעל 0.5 קוב.",
+                datasheet_url: "https://did.li/QQ4TY", // Example datasheet URL
+                specs: {
+                    "נפח אריזה": "שק 25 ק\"ג / 0.5 קוב (בלה)",
+                    "מרכיבים": "צמנט, חול, תוספים",
+                    "שימוש עיקרי": "טיח, הדבקה, בניה (בלוקים), מילוי"
+                },
+                application: [
+                    "לערבב עם מים ביחסים המומלצים עד לקבלת עבידות רצויה.",
+                    "ליישם במאלג' או בכף בנאים לפי הצורך.",
+                    "להקפיד על כיסוי אחיד ויישור."
+                ],
+                drying: {
+                    "זמן שמישות": "כ-2 שעות (לטיט מעורבב)",
+                    "ייבוש למגע": "כ-6-12 שעות",
+                    "ייבוש סופי": "28 יום (לאשפרה מלאה)"
+                },
+                calculator: {
+                    type: 'coverage_thickness_kg',
+                    unit: 'בלות',
+                    bag_weight_kg: 25,
+                    coverage_per_sqm_per_mm_kg: 1.8,
+                    min_thickness_mm: 10,
+                    max_thickness_mm: 50,
+                    volume_per_unit: 0.5,
+                    density_kg_per_m3: 1800
+                },
+                related_products_ids: [14,15,16,18] // חול, סומסום, חצץ, מריצה
+            },
+            {
+                id: 18,
+                name: "מריצה ידנית",
+                brand: "כללי",
+                brand_logo_url: "",
+                category: "כלי עבודה",
+                description: "מריצה ידנית חזקה ועמידה, אידיאלית להובלת חומרי בניין באתר.",
+                datasheet_url: "https://did.li/QQ4TY", // Example datasheet URL
+                specs: {
+                    "חומר": "פלדה מגולוונת / פלסטיק מחוזק",
+                    "נפח": "80-120 ליטר",
+                    "גלגל": "פניאומטי מחוזק"
+                },
+                application: ["להובלת חול, חצץ, מלט, פסולת בניין ועוד."],
+                drying: {},
+                related_products_ids: [14,15,16,17] // חומרי בניין בצובר
+            },
+            {
+                id: 19,
+                name: "מגב גומי לרובה",
+                brand: "כללי",
+                brand_logo_url: "",
+                category: "כלי עבודה",
+                description: "מגב גומי מקצועי ליישום והחלקת רובה, מונע שריטות ומבטיח מילוי אחיד של המישקים.",
+                datasheet_url: "https://did.li/QQ4TY", // Example datasheet URL
+                specs: {
+                    "חומר": "ידית פלסטיק, גומי עמיד",
+                    "רוחב": "20-25 ס\"מ",
+                    "שימוש": "מילוי מישקים ברובה"
+                },
+                application: [
+                    "לאחר מריחת הרובה, יש להחליק את העודפים באמצעות המגב בזווית של 45 מעלות.",
+                    "לנקות את המגב לעיתים קרובות."
+                ],
+                drying: {},
+                related_products_ids: [9] // רובה
+            }
+        ];
+
+        // Store images for the gallery
+        const storeImages = [
+            { src: 'https://saban94.wordpress.com/wp-content/uploads/2020/01/46453331_572490759853122_8215770119347896320_o.jpg?w=150', alt: 'סניף החרש - פנים', branch: 'החרש' }, // Updated
+            { src: 'https://placehold.co/600x400/ADD8E6/2563EB?text=סניף+החרש+2', alt: 'סניף החרש - חזית', branch: 'החרש' },
+            { src: 'https://placehold.co/600x400/ADD8E6/2563EB?text=סניף+החרש+3', alt: 'סניף החרש - מחסן', branch: 'החרש' },
+            { src: 'https://placehold.co/600x400/ADD8E6/2563EB?text=סניף+התלמיד+1', alt: 'סניף התלמיד - כניסה', branch: 'התלמיד' },
+            { src: 'https://lh3.googleusercontent.com/p/AF1QipP-L-0l0QGsJjsiNaC7c7lfUbuJOUs99G22nEc7=s680-w680-h510-rw', alt: 'סניף התלמיד - מבחוץ', branch: 'התלמיד' }, // Updated
+            { src: 'https://placehold.co/600x400/ADD8E6/2563EB?text=סניף+התלמיד+3', alt: 'סניף התלמיד - מחלקת אינסטלציה', branch: 'התלמיד' },
+            { src: 'https://placehold.co/600x400/ADD8E6/2563EB?text=סניף+התלמיד+4', alt: 'סניף התלמיד - תצוגה', branch: 'התלמיד' },
+        ];
+
+
+        const app = document.getElementById('app');
+        const productGrid = document.getElementById('productGrid');
+        const productModal = document.getElementById('productModal');
+        const modalContentWrapper = document.getElementById('modalContentWrapper');
+        const cartModal = document.getElementById('cartModal');
+        const closeCartModal = document.getElementById('closeCartModal');
+        const cartButton = document.getElementById('cartButton');
+        const cartCount = document.getElementById('cartCount');
+        const cartItemsContainer = document.getElementById('cartItemsContainer');
+        const categoryFiltersContainer = document.getElementById('categoryFilters');
+        const brandFiltersContainer = document.getElementById('brandFilters');
+        const clearFiltersButton = document.getElementById('clearFilters');
+        const searchInput = document.getElementById('searchInput');
+        const scanBarcodeButton = document.getElementById('scanBarcode');
+        const orderForm = document.getElementById('orderForm');
+        const customerNameInput = document.getElementById('customerName');
+        const customerPhoneInput = document.getElementById('customerPhone');
+        const orderNotesInput = document.getElementById('orderNotes');
+
+        const projectAdvisorButton = document.getElementById('projectAdvisorButton');
+        const projectAdvisorModal = document.getElementById('projectAdvisorModal');
+        const closeProjectAdvisorModal = document.getElementById('closeProjectAdvisorModal');
+        const getAdvisorAdviceButton = document.getElementById('getAdvisorAdvice');
+        const projectAdvisorInput = document.getElementById('projectAdvisorInput');
+        const advisorChatHistoryDiv = document.getElementById('advisorChatHistory');
+        const advisorLoading = document.getElementById('advisorLoading');
+        const summarizeChatButton = document.getElementById('summarizeChatButton'); // NEW
+
+        const showGalleryButton = document.getElementById('showGalleryButton');
+        const galleryModal = document.getElementById('galleryModal');
+        const closeGalleryModal = document.getElementById('closeGalleryModal');
+        const galleryImageContainer = document.getElementById('galleryImageContainer');
+
+        const virtualKeyboard = document.getElementById('virtualKeyboard');
+        const closeKeyboardBtn = document.getElementById('closeKeyboard');
+        const toggleLangBtn = document.getElementById('toggleLang');
+        const toggleEmojiBtn = document.getElementById('toggleEmoji');
+        const keyboardLayoutDiv = document.getElementById('keyboardLayout');
+
+        let activeFilters = { category: [], brand: [] };
+        let cart = [];
+        let currentFilteredProducts = [];
+        let currentProductIndexInFilteredList = -1;
+        let chatHistory = []; // Stores the full chat conversation
+
+        let activeInput = null; // To track which input field is active for the keyboard
+
+        // Prepare product data for LLM context
+        const productsForLLM = products.map(p => {
+            return `שם: ${p.name}, מותג: ${p.brand}, קטגוריה: ${p.category}, תיאור מקוצר: ${p.description.substring(0, 100)}...`;
+        }).join('\n');
+
+        // System prompt, defined globally
+        const systemPrompt = `אתה יועץ מוצר מתקדם ומומחה לחומרי בניין מטעם ח.סבן חומרי בניין. ענה על שאלות המשתמש בצורה מקצועית, מפורטת ומדויקת, כאילו אתה מומחה בעל ידע עמוק בתחום.
+        
+        הקטלוג הנוכחי כולל מוצרים כגון:
+        ${productsForLLM}
+
+        הנחיות לתשובה:
+        * **דיוק ותמצות**: ענה על השאלה בתמציתיות ובדיוק תחילה.
+        * **שאלות המשך**: לאחר מתן התשובה התמציתית (אלא אם כן זו הרחבה), שאל את המשתמש האם ירצה להרחיב בפרטים נוספים על המוצר המומלץ או לראות מוצרים נלווים. לדוגמה: "האם תרצה להרחיב בפרטים נוספים על [שם המוצר] או לראות מוצרים נלווים? �".
+        * **נתונים ספציפיים**: במידת הרלוונטיות, התייחס לסוגי חומרים וכלים ספציפיים מהקטלוג שלנו.
+        * **פרויקטים**: אם השאלה עוסקת בפרויקט, ספק שלבים כלליים או טיפים חשובים לביצוע.
+        * **שילוב מידע על ח.סבן**: "ח.סבן חומרי בניין היא חברה ותיקה ומובילה בתחום חומרי הבניין בישראל. אנו מציעים מגוון רחב של מוצרים וכלים ממיטב המותגים. לחברה מספר סניפים ברחבי הארץ, עם מחלקות ייעודיות לטיח, איטום, אינסטלציה, כלי עבודה, גבס וחומרי צובר. אנו מספקים שירותי הובלה יעילים עד אתר הלקוח."
+        * **שילוב אימוג'י**: הוסף אימוג'י רלוונטי וממחיש לתשובה.
+        * **פורמט טבלאי**: אם התשובה כוללת השוואה או רשימה של נתונים, הצג אותם בפורמט של טבלה (באמצעות Markdown).
+        * **זיהוי מוצרים קטלוגיים**: נסה לזהות שמות מוצרים מהקטלוג כדי להציע קישורים או פרטים נוספים.
+        * **מוצרים נלווים ספציפיים**: כאשר המשתמש מבקש "מוצרים נלווים" למוצר מסוים (לדוגמה: SikaTop Seal-107), נסה להציע גם כלים חיוניים ספציפיים (כגון מברשת זפת או רולר ליישום, כפפות, דלי ערבוב) בנוסף למוצרי עזר אחרים.
+
+        תשובתך צריכה להיות בעברית בלבד.`;
+
+
+        // Keyboard layouts
+        const layouts = {
+            he: [
+                ['ק', 'ר', 'א', 'ט', 'ו', 'ן', 'ם', 'פ', ']', '['],
+                ['ש', 'ד', 'ג', 'כ', 'ע', 'י', 'ח', 'ל', 'ך', 'ף', ','],
+                ['ז', 'ס', 'ב', 'ה', 'נ', 'מ', 'צ', 'ת', 'ץ', '.', '/'],
+                ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'],
+                ['@', '#', '$', '%', '&', '*', '(', ')', '_', '+', '='],
+            ],
+            en: [
+                ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}'],
+                ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':', '"'],
+                ['z', 'x', 'c', 'v', 'b', 'n', 'm', '<', '>', '?'],
+                ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'],
+                ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '='],
+            ],
+            numbers: [
+                ['7', '8', '9'],
+                ['4', '5', '6'],
+                ['1', '2', '3'],
+                ['0', '.', '='],
+            ],
+            emojis: [
+                ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊'],
+                ['😋', '😎', '😍', '😘', '😗', '😙', '😚', '🙂', '🤗', '🤔'],
+                ['😮', '🤐', '🙁', '😔', '😪', '🤒', '😷', '🤕', '🤢', '🤮'],
+                ['👍', '👎', '👏', '🙌', '🙏', '❤️', '💔', '🌟', '💡', '🚀'],
+            ]
+        };
+        let currentLayout = 'he';
+        let isEmojiLayout = false;
+
+        function renderKeyboard() {
+            keyboardLayoutDiv.innerHTML = '';
+            const layout = isEmojiLayout ? layouts.emojis : layouts[currentLayout];
+            keyboardLayoutDiv.classList.toggle('hebrew', currentLayout === 'he' && !isEmojiLayout);
+            keyboardLayoutDiv.classList.toggle('english', currentLayout === 'en' && !isEmojiLayout);
+            keyboardLayoutDiv.classList.toggle('emoji', isEmojiLayout);
+
+            layout.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'flex gap-2 mb-2 w-full';
+                row.forEach(key => {
+                    const keyButton = document.createElement('button');
+                    keyButton.className = 'keyboard-key flex-grow';
+                    if (key === ' ') keyButton.className += ' space'; // Special class for space
+                    keyButton.textContent = key;
+                    keyButton.dataset.key = key; // Store key value
+                    keyButton.addEventListener('click', () => handleKeyPress(key));
+                    rowDiv.appendChild(keyButton);
+                });
+                keyboardLayoutDiv.appendChild(rowDiv);
+            });
+
+            // Add special keys (Backspace, Shift, Enter, etc.)
+            const specialKeysRow = document.createElement('div');
+            specialKeysRow.className = 'flex gap-2 mb-2 w-full';
+
+            const backspace = document.createElement('button');
+            backspace.className = 'keyboard-key wide';
+            backspace.innerHTML = '&#9003;'; // Backspace symbol
+            backspace.addEventListener('click', handleBackspace);
+            specialKeysRow.appendChild(backspace);
+
+            const space = document.createElement('button');
+            space.className = 'keyboard-key space';
+            space.innerHTML = 'רווח'; // Spacebar
+            space.addEventListener('click', () => handleKeyPress(' '));
+            specialKeysRow.appendChild(space);
+
+            const enter = document.createElement('button');
+            enter.className = 'keyboard-key wide';
+            enter.innerHTML = '&#x21B5;'; // Enter symbol
+            enter.addEventListener('click', handleEnterPress);
+            specialKeysRow.appendChild(enter);
+
+            keyboardLayoutDiv.appendChild(specialKeysRow);
+        }
+
+        function handleKeyPress(key) {
+            if (activeInput) {
+                const start = activeInput.selectionStart;
+                const end = activeInput.selectionEnd;
+                activeInput.value = activeInput.value.substring(0, start) + key + activeInput.value.substring(end);
+                activeInput.selectionStart = activeInput.selectionEnd = start + key.length;
+                activeInput.focus();
+                activeInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger input event for search/filters
+            }
+        }
+
+        function handleBackspace() {
+            if (activeInput) {
+                const start = activeInput.selectionStart;
+                const end = activeInput.selectionEnd;
+                if (start === end && start > 0) {
+                    activeInput.value = activeInput.value.substring(0, start - 1) + activeInput.value.substring(end);
+                    activeInput.selectionStart = activeInput.selectionEnd = start - 1;
+                } else {
+                    activeInput.value = activeInput.value.substring(0, start) + activeInput.value.substring(end);
+                }
+                activeInput.focus();
+                activeInput.dispatchEvent(new Event('input', { bubbles: true })); // Trigger input event for search/filters
+            }
+        }
+
+        function handleEnterPress() {
+            if (activeInput && activeInput.id === 'projectAdvisorInput') {
+                getAdvisorAdviceButton.click(); // Trigger advice if it's the advisor input
+            } else if (activeInput && activeInput.id === 'searchInput') {
+                applyFilters(); // Trigger search
+            }
+            // For other inputs, just close keyboard or do nothing specific
+            hideKeyboard();
+        }
+
+        function showKeyboard(inputElement) {
+            if (activeInput) {
+                activeInput.classList.remove('input-with-keyboard-active');
+            }
+            activeInput = inputElement;
+            activeInput.classList.add('input-with-keyboard-active');
+            virtualKeyboard.classList.add('active');
+            activeInput.focus();
+        }
+
+        function hideKeyboard() {
+            if (activeInput) {
+                activeInput.classList.remove('input-with-keyboard-active');
+            }
+            activeInput = null;
+            virtualKeyboard.classList.remove('active');
+        }
+
+        closeKeyboardBtn.addEventListener('click', hideKeyboard);
+
+        toggleLangBtn.addEventListener('click', () => {
+            isEmojiLayout = false;
+            currentLayout = currentLayout === 'he' ? 'en' : 'he';
+            renderKeyboard();
+        });
+
+        toggleEmojiBtn.addEventListener('click', () => {
+            isEmojiLayout = !isEmojiLayout;
+            renderKeyboard();
+        });
+
+
+        // Function to populate product images (now relies on existing product.image)
+        async function populateProductImages() {
+            // No longer fetching images via LLM, just render with existing data
+            renderProducts(products);
+        }
+
+        function renderProducts(productsToRender) {
+            productGrid.innerHTML = '';
+            currentFilteredProducts = productsToRender;
+            if (productsToRender.length === 0) {
+                productGrid.innerHTML = `<p class="text-center text-gray-500 col-span-full text-xl py-10">לא נמצאו מוצרים התואמים את הסינון.</p>`;
+                return;
+            }
+            productsToRender.forEach((product, index) => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.dataset.filteredIndex = index;
+                card.innerHTML = `
+                    <img src="${product.image || `https://placehold.co/400x300/E0F2F7/2563EB?text=${encodeURIComponent(product.name)}`}" alt="${product.name}" class="w-full h-40 object-cover product-main-image rounded-t-2xl" onerror="this.src='https://placehold.co/400x300/E0F2F7/2563EB?text=Image+Not+Found'">
+                    <div class="p-4 flex items-center justify-between">
+                        <div>
+                            <span class="text-sm text-gray-500">${product.brand}</span>
+                            <h3 class="font-bold text-xl mt-1 truncate text-blue-800">${product.name}</h3>
+                        </div>
+                        ${product.brand_logo_url ? `<img src="${product.brand_logo_url}" alt="${product.brand} logo" class="w-12 h-12 object-contain ml-2 rounded-lg" onerror="this.src='https://placehold.co/48x48/CCCCCC/333333?text=Logo'">` : ''}
+                    </div>
+                `;
+                productGrid.appendChild(card);
+            });
+        }
+        
+        function createTimeline(dryingData) {
+            let html = '<div class="space-y-4 text-lg">';
+            for (const [key, value] of Object.entries(dryingData)) {
+                if (value && typeof value === 'string' && value.trim() !== "") {
+                     html += `
+                        <div class="flex items-center">
+                            <span class="w-1/3 text-gray-600 font-semibold">${key}</span>
+                            <span class="w-2/3 font-bold text-blue-800">${value}</span>
+                        </div>
+                    `;
+                }
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function createCalculatorHTML(product) {
+            if (!product.calculator) return '<p class="text-center text-gray-500 text-lg py-8">מחשבון כמות אינו זמין עבור מוצר זה.</p>';
+            
+            const { type, unit, bag_weight_kg, coverage_per_sqm_per_mm_kg, min_thickness_mm, max_thickness_mm, coverage_per_sqm, grout_density_factor, default_tile_length_mm, default_tile_width_mm, default_joint_width_mm, default_joint_depth_mm, material_volume_per_sqm_per_mm, volume_per_unit, density_kg_per_m3 } = product.calculator;
+
+            let inputsHtml = '';
+            if (type === 'coverage_thickness_kg' || type === 'volume_thickness_m3') {
+                inputsHtml = `
+                    <div class="mb-4">
+                        <label for="calcArea" class="block text-blue-700 text-base font-bold mb-2">שטח במ"ר:</label>
+                        <input type="number" id="calcArea" value="10" min="0.1" step="0.1" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-blue-300 text-lg">
+                    </div>
+                    <div class="mb-4">
+                        <label for="calcThickness" class="block text-blue-700 text-base font-bold mb-2">עובי שכבה במ"מ (${min_thickness_mm}-${max_thickness_mm} מומלץ):</label>
+                        <input type="number" id="calcThickness" value="${min_thickness_mm}" min="${min_thickness_mm}" step="0.1" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-blue-300 text-lg">
+                    </div>
+                `;
+            } else if (type === 'coverage_kg') {
+                inputsHtml = `
+                    <div class="mb-4">
+                        <label for="calcArea" class="block text-blue-700 text-base font-bold mb-2">שטח במ"ר:</label>
+                        <input type="number" id="calcArea" value="10" min="0.1" step="0.1" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-blue-300 text-lg">
+                    </div>`;
+            } else if (type === 'grout_calculator') {
+                 inputsHtml = `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="mb-2 col-span-2">
+                            <label for="calcArea" class="block text-blue-700 text-base font-bold mb-2">שטח ריצוף במ"ר:</label>
+                            <input type="number" id="calcArea" value="10" min="0.1" step="0.1" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 border-blue-300 text-lg">
+                        </div>
+                        <div class="mb-2">
+                            <label for="calcTileLength" class="block text-blue-700 text-base font-bold mb-2">אורך אריח (מ"מ):</label>
+                            <input type="number" id="calcTileLength" value="${default_tile_length_mm}" min="1" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 border-blue-300 text-lg">
+                        </div>
+                        <div class="mb-2">
+                            <label for="calcTileWidth" class="block text-blue-700 text-base font-bold mb-2">רוחב אריח (מ"מ):</label>
+                            <input type="number" id="calcTileWidth" value="${default_tile_width_mm}" min="1" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 border-blue-300 text-lg">
+                        </div>
+                        <div class="mb-2">
+                            <label for="calcJointWidth" class="block text-blue-700 text-base font-bold mb-2">רוחב מישק (מ"מ):</label>
+                            <input type="number" id="calcJointWidth" value="${default_joint_width_mm}" min="1" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 border-blue-300 text-lg">
+                        </div>
+                        <div class="mb-2">
+                            <label for="calcJointDepth" class="block text-blue-700 text-base font-bold mb-2">עומק מישק (מ"מ):</label>
+                            <input type="number" id="calcJointDepth" value="${default_joint_depth_mm}" min="1" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 border-blue-300 text-lg">
+                        </div>
+                    </div>`;
+            }
+
+            return `
+                <div class="p-4">
+                    <h3 class="font-bold text-2xl mb-4 text-blue-700">מחשבון כמות</h3>
+                    ${inputsHtml}
+                    <button id="calculateBtn" class="btn-primary w-full mt-4">חשב כמות</button>
+                    <div class="mt-4 p-4 bg-white bg-opacity-70 rounded-lg text-center text-xl font-bold text-blue-800 border border-blue-200">
+                        <span>הכמות הנדרשת:</span>
+                        <span id="calcResult" class="ml-2">הזן נתונים לחישוב</span>
+                    </div>
+                </div>`;
+        }
+        
+        function attachCalculatorListeners(product) {
+            const calculateBtn = document.getElementById('calculateBtn');
+            if (!calculateBtn) return;
+            
+            const calcFunc = () => {
+                const { type, unit, bag_weight_kg, coverage_per_sqm_per_mm_kg, coverage_per_sqm, grout_density_factor, volume_per_unit, density_kg_per_m3 } = product.calculator;
+                const area = parseFloat(document.getElementById('calcArea')?.value) || 0;
+                let resultText = 'אנא הזן ערכים חוקיים.';
+
+                if (area <= 0) { // Basic validation
+                    document.getElementById('calcResult').textContent = resultText;
+                    return;
+                }
+
+                if (type === 'coverage_thickness_kg' || type === 'volume_thickness_m3') {
+                    const thickness = parseFloat(document.getElementById('calcThickness')?.value) || 0;
+                    if (thickness <= 0) { // Basic validation
+                        document.getElementById('calcResult').textContent = resultText;
+                        return;
+                    }
+
+                    if (type === 'coverage_thickness_kg') {
+                        const totalKg = area * thickness * coverage_per_sqm_per_mm_kg;
+                        resultText = `${totalKg.toFixed(2)} ק"ג`;
+                        if (bag_weight_kg > 0) {
+                            if (unit === 'בלות' && density_kg_per_m3 > 0 && volume_per_unit > 0) { // Specific calculation for 'bales' unit
+                                const totalKiloBags = Math.ceil(totalKg / bag_weight_kg);
+                                const totalVolume = (totalKg / density_kg_per_m3);
+                                const totalBaleBags = Math.ceil(totalVolume / volume_per_unit);
+                                resultText += ` (כ-${totalKiloBags} שקים או ${totalBaleBags} בלות)`;
+                            } else {
+                                 const numBags = Math.ceil(totalKg / bag_weight_kg);
+                                 resultText += ` (כ-${numBags} ${unit})`;
+                            }
+                        }
+                    } else { // volume_thickness_m3
+                        const totalCubicMeters = area * thickness * 0.001;
+                        resultText = `${totalCubicMeters.toFixed(3)} קוב`;
+                         if (volume_per_unit > 0) {
+                            const numUnits = Math.ceil(totalCubicMeters / volume_per_unit);
+                            resultText += ` (כ-${numUnits} ${unit})`;
+                        }
+                    }
+                } else if (type === 'coverage_kg') {
+                    const totalKg = area * coverage_per_sqm;
+                    resultText = `${totalKg.toFixed(2)} ק"ג`;
+                    if (bag_weight_kg > 0) {
+                        const numBags = Math.ceil(totalKg / bag_weight_kg);
+                        resultText += ` (כ-${numBags} ${unit})`;
+                    }
+                } else if (type === 'grout_calculator') {
+                    const tileLength = parseFloat(document.getElementById('calcTileLength').value) || 0;
+                    const tileWidth = parseFloat(document.getElementById('calcTileWidth').value) || 0;
+                    const jointWidth = parseFloat(document.getElementById('calcJointWidth').value) || 0;
+                    const jointDepth = parseFloat(document.getElementById('calcJointDepth').value) || 0;
+
+                    if (tileLength <= 0 || tileWidth <= 0 || jointWidth <= 0 || jointDepth <= 0) { // Basic validation
+                        document.getElementById('calcResult').textContent = resultText;
+                        return;
+                    }
+
+                    const groutPerSqm = ((tileLength + tileWidth) * jointWidth * jointDepth * grout_density_factor) / (tileLength * tileWidth);
+                    const totalGroutKg = area * groutPerSqm;
+                    resultText = `${totalGroutKg.toFixed(2)} ק"ג`;
+                    if (bag_weight_kg > 0) {
+                        const numBags = Math.ceil(totalGroutKg / bag_weight_kg);
+                        resultText += ` (כ-${numBags} ${unit})`;
+                    }
+                }
+                document.getElementById('calcResult').textContent = resultText;
+            };
+
+            calculateBtn.onclick = calcFunc;
+            const inputs = productModal.querySelectorAll('#tab-calculator input');
+            inputs.forEach(input => {
+                input.addEventListener('input', calcFunc);
+                input.addEventListener('focus', () => showKeyboard(input)); // Show keyboard on focus
+            });
+            calcFunc();
+        }
+
+        function openProductModal(filteredIndex) {
+            currentProductIndexInFilteredList = filteredIndex;
+            const product = currentFilteredProducts[filteredIndex];
+            if (!product) return;
+            
+            modalContentWrapper.innerHTML = `
+                <div class="modal-content">
+                    <header class="p-6 border-b border-white border-opacity-40 flex justify-between items-start bg-gradient-to-br from-[#ADD8E6] to-[#87CEEB] text-white rounded-t-3xl">
+                        <div>
+                            <span class="text-xl text-white flex items-center">
+                                ${product.brand_logo_url ? `<img src="${product.brand_logo_url}" alt="${product.brand} logo" class="w-8 h-8 object-contain mr-2 rounded-md" onerror="this.src='https://placehold.co/32x32/CCCCCC/333333?text=Logo'">` : ''}
+                                ${product.brand}
+                            </span>
+                            <h2 class="text-4xl font-bold">${product.name}</h2>
+                        </div>
+                        <button id="closeModal" class="text-4xl font-bold text-white hover:text-red-300 transition-colors">&times;</button>
+                    </header>
+                    <div class="flex flex-col md:flex-row flex-grow overflow-hidden">
+                        <div class="w-full md:w-2/5 p-6">
+                             <img src="${product.image || `https://placehold.co/400x300/E0F2F7/2563EB?text=${encodeURIComponent(product.name)}`}" alt="${product.name}" class="rounded-2xl shadow-lg w-full object-cover border border-blue-200 hover:border-blue-400 hover:shadow-xl transition-all duration-300" onerror="this.src='https://placehold.co/400x300/E0F2F7/2563EB?text=Image+Not+Found'">
+                             <p class="mt-4 text-gray-700 text-lg">${product.description}</p>
+                             ${product.warranty ? `<div class="mt-4 p-3 bg-white bg-opacity-70 rounded-lg text-center border border-blue-100 text-lg"><p class="font-bold text-blue-700">אחריות: ${product.warranty}</p></div>` : ''}
+                             ${product.datasheet_url ? `
+                                <div class="mt-4 text-center">
+                                    <p class="text-blue-800 text-lg font-semibold mb-2">לצפייה בתדף המוצר מאתר היצרן:</p>
+                                    <button id="openDatasheet" class="btn-datasheet">לחץ כאן לתדף 📄</button>
+                                </div>
+                             ` : ''}
+                        </div>
+                        <div class="w-full md:w-3/5 flex flex-col">
+                            <nav id="modalTabs" class="border-b border-blue-200 flex-shrink-0 flex p-2"> <!-- Added p-2 for internal padding of tabs -->
+                                <button data-tab="tab-specs" class="tab-button active">מפרט טכני</button>
+                                <button data-tab="tab-application" class="tab-button">הוראות יישום</button>
+                                ${Object.keys(product.drying).length > 0 ? `<button data-tab="tab-drying" class="tab-button">זמני ייבוש</button>` : ''}
+                                ${product.calculator ? `<button data-tab="tab-calculator" class="tab-button">מחשבון כמות</button>` : ''}
+                            </nav>
+                            <div class="p-6 overflow-y-auto flex-grow text-lg">
+                                <div id="tab-specs" class="tab-content">
+                                     <h3 class="font-bold text-2xl mb-4 text-blue-700">מפרט טכני מלא</h3>
+                                     <div class="space-y-2">
+                                        ${Object.entries(product.specs).map(([key, value]) => `
+                                            <div class="flex border-b border-blue-100 py-3">
+                                                <strong class="w-1/3 text-gray-600">${key}</strong>
+                                                <span class="w-2/3 text-blue-800 font-semibold">${value}</span>
+                                            </div>`).join('')}
+                                     </div>
+                                </div>
+                                <div id="tab-application" class="tab-content hidden">
+                                    <h3 class="font-bold text-2xl mb-4 text-blue-700">הוראות יישום</h3>
+                                    <ol class="list-decimal pr-5 space-y-3 text-blue-800">
+                                        ${product.application.map(step => `<li>${step}</li>`).join('')}
+                                    </ol>
+                                </div>
+                                <div id="tab-drying" class="tab-content hidden">
+                                    <h3 class="font-bold text-2xl mb-4 text-blue-700">זמני ייבוש ואשפרה</h3>
+                                    ${createTimeline(product.drying)}
+                                </div>
+                                <div id="tab-calculator" class="tab-content hidden">
+                                    ${createCalculatorHTML(product)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <footer class="p-4 bg-white bg-opacity-90 border-t border-white border-opacity-40 flex justify-between items-center rounded-b-3xl">
+                        <button id="prevProduct" class="btn-secondary ${currentProductIndexInFilteredList === 0 ? 'opacity-50 cursor-not-allowed' : ''}">⬅️ קודם</button>
+                        <button id="addToCart" data-product-id="${product.id}" class="btn-primary">הוסף להזמנה</button>
+                        <button id="nextProduct" class="btn-secondary ${currentProductIndexInFilteredList === currentFilteredProducts.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}">הבא ➡️</button>
+                    </footer>
+                </div>
+            `;
+            
+            productModal.classList.remove('hidden');
+
+            document.getElementById('closeModal').addEventListener('click', () => productModal.classList.add('hidden'));
+            
+            document.getElementById('addToCart').addEventListener('click', (e) => {
+                const productId = e.target.dataset.productId;
+                addToCart(productId);
+                productModal.classList.add('hidden');
+            });
+
+            document.getElementById('prevProduct').addEventListener('click', () => {
+                if (currentProductIndexInFilteredList > 0) openProductModal(currentProductIndexInFilteredList - 1);
+            });
+            document.getElementById('nextProduct').addEventListener('click', () => {
+                if (currentProductIndexInFilteredList < currentFilteredProducts.length - 1) openProductModal(currentProductIndexInFilteredList + 1);
+            });
+
+            if (product.datasheet_url) {
+                document.getElementById('openDatasheet').addEventListener('click', () => {
+                    window.open(product.datasheet_url, '_blank');
+                });
+            }
+
+            const tabs = productModal.querySelectorAll('.tab-button');
+            const tabContents = productModal.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    tabContents.forEach(content => content.classList.add('hidden'));
+                    document.getElementById(tab.dataset.tab).classList.remove('hidden');
+                });
+            });
+            
+            if (product.calculator) {
+                attachCalculatorListeners(product);
+            }
+        }
+        
+        function setupFilters() {
+            const categories = [...new Set(products.map(p => p.category))];
+            const brands = [...new Set(products.map(p => p.brand))];
+
+            categoryFiltersContainer.innerHTML = categories.map(category => `
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" data-filter="category" value="${category}" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-400 focus:ring-blue-600">
+                    <span class="mr-3 text-blue-800 font-bold">${category}</span>
+                </label>
+            `).join('');
+
+            brandFiltersContainer.innerHTML = brands.map(brand => `
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" data-filter="brand" value="${brand}" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-400 focus:ring-blue-600">
+                    <span class="mr-3 text-blue-800 font-bold">${brand}</span>
+                </label>
+            `).join('');
+            
+            document.querySelectorAll('#filters input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', applyFilters);
+            });
+        }
+        
+        function applyFilters() {
+            const selectedCategories = Array.from(document.querySelectorAll('input[data-filter="category"]:checked')).map(cb => cb.value);
+            const selectedBrands = Array.from(document.querySelectorAll('input[data-filter="brand"]:checked')).map(cb => cb.value);
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            let filteredProducts = products.filter(product => {
+                const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(product.category);
+                const brandMatch = selectedBrands.length === 0 || selectedBrands.includes(product.brand);
+                const searchMatch = searchTerm === '' || product.name.toLowerCase().includes(searchTerm) || product.brand.toLowerCase().includes(searchTerm) || product.description.toLowerCase().includes(searchTerm);
+                return categoryMatch && brandMatch && searchMatch;
+            });
+            renderProducts(filteredProducts);
+        }
+
+        function clearFilters() {
+            document.querySelectorAll('#filters input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+            searchInput.value = '';
+            applyFilters();
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === parseInt(productId));
+            const existingItem = cart.find(item => item.id === product.id);
+
+            if (existingItem) existingItem.quantity++;
+            else cart.push({ ...product, quantity: 1 });
+            
+            updateCart();
+        }
+
+        function updateCart() {
+            const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCount.classList.toggle('hidden', totalItems === 0);
+            renderCartItems();
+        }
+        
+        function renderCartItems() {
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `<p class="text-center text-gray-500 py-8 text-lg">עגלת ההזמנות ריקה.</p>`;
+                return;
+            }
+            cartItemsContainer.innerHTML = `
+                <div class="space-y-4">
+                    ${cart.map(item => `
+                        <div class="flex items-center justify-between p-3 border-b border-gray-200 bg-white bg-opacity-70 rounded-lg">
+                            <div class="flex items-center">
+                                <img src="${item.image || `https://placehold.co/100x100/E0F2F7/2563EB?text=img`}" class="w-16 h-16 rounded-lg object-cover mr-4" onerror="this.src='https://placehold.co/100x100/E0F2F7/2563EB?text=Image+Not+Found'">
+                                <div>
+                                    <p class="font-bold text-blue-800 text-lg">${item.name}</p>
+                                    <p class="text-sm text-gray-500">${item.brand}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4 space-x-reverse">
+                                 <button class="quantity-change font-bold text-xl text-blue-600 hover:text-blue-800" data-id="${item.id}" data-change="-1">-</button>
+                                 <span class="font-semibold text-xl text-blue-800">${item.quantity}</span>
+                                 <button class="quantity-change font-bold text-xl text-blue-600 hover:text-blue-800" data-id="${item.id}" data-change="1">+</button>
+                                 <button class="remove-item text-red-500 hover:text-red-700 text-xl" data-id="${item.id}">🗑️</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+        }
+
+        function handleCartInteraction(e) {
+            const target = e.target.closest('button');
+            if (!target) return;
+
+            const id = parseInt(target.dataset.id);
+            const item = cart.find(i => i.id === id);
+
+            if (target.classList.contains('quantity-change')) {
+                const change = parseInt(target.dataset.change);
+                if (item) {
+                    item.quantity += change;
+                    if (item.quantity <= 0) cart = cart.filter(i => i.id !== id);
+                }
+            } else if (target.classList.contains('remove-item')) {
+                 cart = cart.filter(i => i.id !== id);
+            }
+            updateCart();
+        }
+
+        productGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('.product-card');
+            if (card) {
+                const filteredIndex = parseInt(card.dataset.filteredIndex);
+                openProductModal(filteredIndex);
+            }
+        });
+        
+        cartButton.addEventListener('click', () => cartModal.classList.remove('hidden'));
+        closeCartModal.addEventListener('click', () => cartModal.classList.add('hidden'));
+
+        projectAdvisorButton.addEventListener('click', () => {
+            projectAdvisorModal.classList.remove('hidden');
+            renderChatHistory(); // Ensure chat history is rendered on open, and initial message is added to chatHistory array
+            advisorChatHistoryDiv.scrollTop = advisorChatHistoryDiv.scrollHeight; // Scroll to bottom
+        });
+        closeProjectAdvisorModal.addEventListener('click', () => {
+            projectAdvisorModal.classList.add('hidden');
+            clearInterval(typingInterval); // Stop any ongoing typing effect
+            hideKeyboard(); // Ensure keyboard is hidden when advisor modal closes
+        });
+
+        scanBarcodeButton.addEventListener('click', () => {
+            const barcode = prompt("אנא סרוק או הקלד ברקוד:");
+            if (barcode) {
+                const product = products.find(p => p.id.toString() === barcode.trim());
+                if (product) {
+                    const indexInFullList = products.indexOf(product);
+                    currentFilteredProducts = products; // Reset filtered products to full list for correct navigation
+                    openProductModal(indexInFullList);
+                } else {
+                    // Using a custom alert-like message instead of window.alert
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-500 text-white p-4 rounded-lg shadow-xl z-[9999] text-xl';
+                    msgDiv.textContent = `מוצר עם ברקוד ${barcode} לא נמצא. 😔`;
+                    document.body.appendChild(msgDiv);
+                    setTimeout(() => msgDiv.remove(), 3000);
+                }
+            }
+        });
+        
+        orderForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(cart.length === 0) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-500 text-white p-4 rounded-lg shadow-xl z-[9999] text-xl';
+                msgDiv.textContent = "עגלת ההזמנות ריקה. לא ניתן לשלוח בקשה. 🛒";
+                document.body.appendChild(msgDiv);
+                setTimeout(() => msgDiv.remove(), 3000);
+                return;
+            }
+
+            const customerName = customerNameInput.value.trim();
+            const customerPhone = customerPhoneInput.value.trim();
+            const orderNotes = orderNotesInput.value.trim();
+
+            let whatsappMessage = `*הזמנה חדשה מח.סבן חומרי בניין*\n\n`;
+            whatsappMessage += `*פרטי לקוח:*\n`;
+            whatsappMessage += `שם: ${customerName}\n`;
+            whatsappMessage += `טלפון: ${customerPhone}\n\n`;
+            
+            whatsappMessage += `*פרטי הזמנה:*\n`;
+            cart.forEach(item => {
+                whatsappMessage += `- ${item.name} (מותג: ${item.brand}), כמות: ${item.quantity}\n`;
+            });
+
+            if (orderNotes) {
+                whatsappMessage += `\n*הערות נוספות:*\n${orderNotes}\n`;
+            }
+
+            const whatsappUrl = `https://wa.me/972508860896?text=${encodeURIComponent(whatsappMessage)}`;
+            
+            window.open(whatsappUrl, '_blank');
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white p-4 rounded-lg shadow-xl z-[9999] text-xl';
+            msgDiv.textContent = "הבקשה להזמנה נשלחה בהצלחה לוואטסאפ! נציג ייצור עמך קשר בהקדם. ✅";
+            document.body.appendChild(msgDiv);
+            setTimeout(() => msgDiv.remove(), 3000);
+
+            cart = [];
+            updateCart();
+            orderForm.reset();
+            cartModal.classList.add('hidden');
+        });
+
+        // Function to call Gemini API
+        async function getLLMResponse(chatHistoryData) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const payload = { contents: chatHistoryData };
+            console.log("Sending payload to Gemini API:", JSON.stringify(payload, null, 2));
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorDetails = await response.text();
+                    console.error("Gemini API call failed with status:", response.status, "Details:", errorDetails);
+                    if (response.status === 401) {
+                         return "שגיאת אימות: אנא בדוק את הגדרות מפתח ה-API של Google Gemini ואת הרשאותיו. 🔑 (קוד: 401)";
+                    }
+                    return `אירעה שגיאה בחיבור לשרת (קוד: ${response.status}). אנא נסה שוב מאוחר יותר. 😔`;
+                }
+
+                const result = await response.json();
+                console.log("Received raw response from Gemini API:", JSON.stringify(result, null, 2));
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    
+                    const firstPart = result.candidates[0].content.parts[0];
+                    
+                    // Check if the first part is a text part
+                    if (firstPart && firstPart.text !== undefined) { // Check for explicit 'text' property presence
+                        const responseText = firstPart.text;
+                        if (typeof responseText === 'string') {
+                            console.log("Extracted LLM response text:", responseText);
+                            return responseText;
+                        } else {
+                            console.error("LLM response part 'text' is not a string, type:", typeof responseText, "value:", responseText);
+                            // This case should ideally not happen if 'text' is present and defined, but for safety:
+                            return `אירעה שגיאה בפורמט התשובה (תוכן טקסט לא צפוי). נסה שוב. 😔`;
+                        }
+                    } else {
+                        console.error("LLM response part is not a text part or 'text' property is missing:", firstPart);
+                        return `אירעה שגיאה בפורמט התשובה (חלק טקסט חסר). נסה שוב. 😔`;
+                    }
+                } else {
+                    console.error("LLM response structure unexpected or empty (no candidates or parts):", result);
+                    return "אירעה שגיאה בקבלת הייעוץ (מבנה תשובה לא צפוי). נסה שוב מאוחר יותר. 😔";
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API (network, JSON parsing, or other):", error);
+                // Specifically check if the error is due to JSON parsing, common with malformed responses
+                if (error instanceof SyntaxError && error.message.includes("JSON")) {
+                    return `אירעה שגיאה בפענוח תשובת השרת (JSON שגוי). אנא נסה שוב. 🌐`;
+                }
+                return `אירעה שגיאה כללית ברשת או בשרת: ${error.message}. אנא נסה שוב. 🌐`;
+            }
+        }
+
+        let currentTypingIndex = 0;
+        let fullAdvisorResponseText = "";
+        let typingInterval;
+
+        function typeAdvisorResponse(element, text, callback = () => {}) {
+            fullAdvisorResponseText = text;
+            currentTypingIndex = 0;
+            element.innerHTML = ""; // Use innerHTML to allow markdown
+            clearInterval(typingInterval);
+            typingInterval = setInterval(() => {
+                if (currentTypingIndex < fullAdvisorResponseText.length) {
+                    element.innerHTML = marked.parse(fullAdvisorResponseText.substring(0, currentTypingIndex + 1));
+                    currentTypingIndex++;
+                    advisorChatHistoryDiv.scrollTop = advisorChatHistoryDiv.scrollHeight; // Keep scrolling
+                } else {
+                    clearInterval(typingInterval);
+                    callback();
+                }
+            }, 30); // Typing speed
+        }
+
+        function addMessageToChat(role, text, options = {}) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${role}`;
+            advisorChatHistoryDiv.appendChild(messageDiv);
+
+            if (role === 'ai') {
+                // Ensure text is a string before passing to typeAdvisorResponse
+                const messageText = typeof text === 'string' ? text : String(text); // Force to string
+                typeAdvisorResponse(messageDiv, messageText, () => {
+                    if (options.showOptions) {
+                         addChatOptions(messageDiv, messageText); // Pass the correct text here too
+                    }
+                    if (options.relatedProducts && options.relatedProducts.length > 0) {
+                        displayRelatedProductsInChat(advisorChatHistoryDiv, options.relatedProducts);
+                    }
+                });
+            } else {
+                messageDiv.innerHTML = marked.parse(text); // For user messages, directly parse markdown if any
+            }
+            advisorChatHistoryDiv.scrollTop = advisorChatHistoryDiv.scrollHeight;
+        }
+
+        function addChatOptions(messageDiv, responseText) {
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'chat-options-container';
+            messageDiv.appendChild(optionsContainer);
+
+            // Try to identify a product mentioned in the last AI response
+            // Check for product names directly in the response string
+            let product = null;
+            for (const p of products) {
+                // Simplified product identification: checks if product name is present in the response
+                if (responseText.includes(p.name)) {
+                    product = p;
+                    break;
+                }
+            }
+            
+            if (product) {
+                const expandButton = document.createElement('button');
+                expandButton.className = 'chat-option-button';
+                expandButton.textContent = `הרחב על ${product.name} 📚`;
+                expandButton.onclick = () => {
+                    addMessageToChat('user', `הרחב על ${product.name}`);
+                    getAdvisorAdviceForProduct(product.id, 'expand');
+                    optionsContainer.remove(); // Remove options after selection
+                };
+                optionsContainer.appendChild(expandButton);
+
+                if (product.related_products_ids && product.related_products_ids.length > 0) {
+                    const relatedButton = document.createElement('button');
+                    relatedButton.className = 'chat-option-button';
+                    relatedButton.textContent = `מוצרים נלווים ל ${product.name} 🛠️`;
+                    relatedButton.onclick = () => {
+                        addMessageToChat('user', `מוצרים נלווים ל ${product.name}`);
+                        getAdvisorAdviceForProduct(product.id, 'related');
+                        optionsContainer.remove(); // Remove options after selection
+                    };
+                    optionsContainer.appendChild(relatedButton);
+                }
+            }
+        }
+
+        async function getAdvisorAdviceForProduct(productId, type) {
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                addMessageToChat('ai', "מצטער, לא מצאתי מידע על המוצר המבוקש. 🤔");
+                return;
+            }
+
+            advisorLoading.classList.remove('hidden');
+            let prompt = "";
+            let relatedProductsToShow = [];
+
+            if (type === 'expand') {
+                prompt = `הרחב בבקשה את המידע על המוצר ${product.name} (מותג: ${product.brand}, קטגוריה: ${product.category}). ציין מפרט טכני, הוראות יישום וזמני ייבוש בצורה מסודרת, יחד עם אימוג'י רלוונטי. הצג את המפרט בטבלה.`;
+            } else if (type === 'related') {
+                const relatedProductNames = product.related_products_ids
+                    .map(id => products.find(p => p.id === id)?.name)
+                    .filter(name => name);
+                
+                let relatedProductsText = relatedProductNames.length > 0 ? relatedProductNames.join(', ') : "אין מידע זמין על מוצרים נלווים ספציפיים בקטלוג.";
+                
+                prompt = `הצג לי מוצרים נלווים למוצר ${product.name} (מותג: ${product.brand}). בנוסף למוצרים מהקטלוג, הצע גם כלים חיוניים ספציפיים שנדרשים ליישום מוצר זה. ספק תשובה תמציתית עם אימוג'י. רשימת מוצרים נלווים ידועים: ${relatedProductsText}.`;
+                
+                // Collect product objects for display in chat
+                relatedProductsToShow = product.related_products_ids.map(id => products.find(p => p.id === id)).filter(p => p);
+            }
+
+            // Always prepend the system prompt as the first message for each API call
+            const fullConversationContext = [
+                { role: "user", parts: [{ text: systemPrompt }] },
+                ...chatHistory, // Append existing chat history
+                { role: "user", parts: [{ text: prompt }] } // Add the current user prompt for product advice
+            ];
+
+            const llmResponse = await getLLMResponse(fullConversationContext);
+            
+            advisorLoading.classList.add('hidden');
+            addMessageToChat('ai', llmResponse, { showOptions: (type === 'expand' || type === 'related') ? false : true, relatedProducts: relatedProductsToShow });
+            chatHistory.push({ role: "model", parts: [{ text: llmResponse }] }); // Add AI response to history
+        }
+
+
+        function displayRelatedProductsInChat(container, relatedProducts) {
+            if (relatedProducts.length === 0) return;
+
+            const relatedDiv = document.createElement('div');
+            relatedDiv.className = 'flex flex-wrap gap-4 mt-4 justify-start'; // Align items to start
+
+            relatedProducts.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'w-32 bg-white bg-opacity-80 rounded-lg shadow p-2 text-center text-sm border border-blue-100 cursor-pointer hover:bg-blue-50 transition-colors';
+                productCard.onclick = () => openProductModal(products.indexOf(product)); // Open product modal
+                productCard.innerHTML = `
+                    <img src="${product.image || `https://placehold.co/100x75/E0F2F7/2563EB?text=img`}" alt="${product.name}" class="w-full h-20 object-cover rounded mb-2" onerror="this.src='https://placehold.co/100x75/E0F2F7/2563EB?text=Image+Not+Found'">
+                    <p class="font-bold text-blue-800 truncate">${product.name}</p>
+                    <p class="text-gray-600">${product.brand}</p>
+                `;
+                relatedDiv.appendChild(productCard);
+            });
+            container.appendChild(relatedDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+
+        // Event listener for the "Get Advice" button in Project Advisor Modal
+        getAdvisorAdviceButton.addEventListener('click', async () => {
+            const userQuery = projectAdvisorInput.value.trim();
+
+            if (!userQuery) {
+                addMessageToChat('ai', "אנא הזן את הפרויקט שלך או שאלה. 🧐");
+                return;
+            }
+
+            addMessageToChat('user', userQuery); // Display user message
+            chatHistory.push({ role: "user", parts: [{ text: userQuery }] }); // Add to chat history
+
+            projectAdvisorInput.value = ""; // Clear input after sending
+            hideKeyboard(); // Hide keyboard after sending message
+
+            // Show loading indicator
+            advisorLoading.classList.remove('hidden');
+
+            // Construct full conversation context for LLM, always starting with system prompt
+            const fullConversationContext = [
+                { role: "user", parts: [{ text: systemPrompt }] },
+                ...chatHistory // Append existing chat history
+            ];
+
+            const llmResponse = await getLLMResponse(fullConversationContext);
+            
+            // Hide loading indicator
+            advisorLoading.classList.add('hidden');
+            addMessageToChat('ai', llmResponse, { showOptions: true }); // Show options after initial response
+            chatHistory.push({ role: "model", parts: [{ text: llmResponse }] }); // Add AI response to history
+        });
+
+        // NEW: Function to summarize chat history
+        summarizeChatButton.addEventListener('click', async () => {
+            advisorLoading.classList.remove('hidden');
+
+            // Filter out the initial welcome message from the chatHistory for summarization
+            const dialogueHistory = chatHistory.filter(msg => 
+                msg.parts && msg.parts.length > 0 && msg.parts[0].text && msg.parts[0].text !== 'שלום! אני יועץ המוצר המתקדם של ח.סבן חומרי בניין. איך אוכל לעזור לך היום? 😊'
+            );
+
+            if (dialogueHistory.length === 0) {
+                addMessageToChat('ai', "אין מספיק שיחות לסכם. התחל לשוחח איתי! 💬");
+                advisorLoading.classList.add('hidden');
+                return;
+            }
+
+            // Create a conversational string from the dialogue history
+            let conversationText = "";
+            dialogueHistory.forEach(msg => {
+                if (msg.role === 'user') {
+                    conversationText += `משתמש: ${msg.parts[0].text}\n`;
+                } else if (msg.role === 'model') {
+                    conversationText += `יועץ: ${msg.parts[0].text}\n`;
+                }
+            });
+
+            const summaryPrompt = `סכם את השיחה הבאה בין משתמש ליועץ מוצרים מח.סבן חומרי בניין. התמקד בשאלות המפתח של המשתמש ובהמלצות העיקריות שניתנו על ידי היועץ. שמור על תמציתיות (עד 100 מילים).
+            שיחה:
+            ${conversationText}
+            סיכום:`;
+
+            // Send a new request to LLM for summarization. The system prompt is implicitly handled by getLLMResponse.
+            const summaryResponse = await getLLMResponse([{ role: "user", parts: [{ text: systemPrompt + "\n\n" + summaryPrompt }] }]); // Prepend system prompt to the summary prompt
+
+            advisorLoading.classList.add('hidden');
+            if (summaryResponse) {
+                addMessageToChat('ai', `*סיכום השיחה:*\n${summaryResponse}`);
+            } else {
+                addMessageToChat('ai', "לא הצלחתי לסכם את השיחה. אולי ננסה שוב? 🤔");
+            }
+        });
+
+
+        clearFiltersButton.addEventListener('click', clearFilters);
+        searchInput.addEventListener('input', applyFilters);
+        cartItemsContainer.addEventListener('click', handleCartInteraction);
+
+        // --- Gallery Modal Logic ---
+        function renderGalleryImages(filterBranch = 'all') {
+            galleryImageContainer.innerHTML = '';
+            const imagesToDisplay = filterBranch === 'all' ? storeImages : storeImages.filter(img => img.branch === filterBranch);
+
+            if (imagesToDisplay.length === 0) {
+                galleryImageContainer.innerHTML = `<p class="text-center text-gray-500 col-span-full text-xl py-10">אין תמונות זמינות עבור סניף זה.</p>`;
+                return;
+            }
+
+            imagesToDisplay.forEach(image => {
+                const imgCard = document.createElement('div');
+                imgCard.className = 'gallery-image-card';
+                imgCard.innerHTML = `
+                    <img src="${image.src}" alt="${image.alt}" onerror="this.src='https://placehold.co/600x400/E0F2F7/2563EB?text=תמונה+לא+נמצאה'">
+                    <p class="p-2 text-base font-semibold text-blue-800">${image.alt}</p>
+                `;
+                galleryImageContainer.appendChild(imgCard);
+            });
+        }
+
+        showGalleryButton.addEventListener('click', () => {
+            galleryModal.classList.remove('hidden');
+            renderGalleryImages('all'); // Show all by default
+            document.querySelectorAll('.btn-secondary[data-branch-filter]').forEach(btn => btn.classList.remove('active-filter-btn'));
+            document.querySelector('[data-branch-filter="all"]').classList.add('active-filter-btn');
+            hideKeyboard(); // Hide keyboard when gallery opens
+        });
+
+        closeGalleryModal.addEventListener('click', () => {
+            galleryModal.classList.add('hidden');
+        });
+
+        galleryModal.querySelectorAll('.btn-secondary[data-branch-filter]').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const branch = e.target.dataset.branchFilter;
+                renderGalleryImages(branch);
+                galleryModal.querySelectorAll('.active-filter-btn').forEach(btn => btn.classList.remove('active-filter-btn'));
+                e.target.classList.add('active-filter-btn');
+            });
+        });
+        // --- End Gallery Modal Logic ---
+
+
+        // Typing effect for search placeholder
+        const placeholderText = "חיפוש לפי שם, מותג, תיאור...";
+        let i = 0;
+        function typeWriter() {
+            if (i < placeholderText.length) {
+                searchInput.placeholder = placeholderText.substring(0, i + 1);
+                i++;
+                setTimeout(typeWriter, 80);
+            } else {
+                 searchInput.placeholder += "|";
+                 setInterval(() => {
+                    const placeholder = searchInput.placeholder;
+                    if (placeholder.endsWith('|')) {
+                        searchInput.placeholder = placeholder.slice(0, -1);
+                    } else {
+                        searchInput.placeholder += '|';
+                    }
+                 }, 500);
+            }
+        }
+
+        // --- Keyboard Focus Listeners ---
+        searchInput.addEventListener('focus', () => showKeyboard(searchInput));
+        projectAdvisorInput.addEventListener('focus', () => showKeyboard(projectAdvisorInput));
+        customerNameInput.addEventListener('focus', () => showKeyboard(customerNameInput));
+        customerPhoneInput.addEventListener('focus', () => showKeyboard(customerPhoneInput));
+        orderNotesInput.addEventListener('focus', () => showKeyboard(orderNotesInput));
+
+        // Close keyboard if user clicks outside of any input or keyboard
+        document.addEventListener('click', (e) => {
+            const isClickInsideKeyboard = virtualKeyboard.contains(e.target);
+            const isClickInsideInput = (activeInput && activeInput.contains(e.target));
+            
+            // Check if the click was outside the keyboard and outside the currently active input
+            if (!isClickInsideKeyboard && !isClickInsideInput && virtualKeyboard.classList.contains('active')) {
+                hideKeyboard();
+            }
+        });
+        // --- End Keyboard Focus Listeners ---
+
+        // Load marked.js for Markdown parsing in chat responses
+        const markedScript = document.createElement('script');
+        markedScript.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+        markedScript.onload = () => {
+             // After marked.js is loaded, set up the renderer
+            const renderer = {
+                table(header, body) {
+                    return `<table class="min-w-full text-lg"><thead>${header}</thead><tbody>${body}</tbody></table>`;
+                },
+                tablerow(content) {
+                    return `<tr>${content}</tr>`;
+                },
+                tablecell(content, flags) {
+                    const tag = flags.header ? 'th' : 'td';
+                    return `<${tag}>${content}</${tag}>`;
+                },
+                strong(text) {
+                    return `<strong>${text}</strong>`;
+                },
+                paragraph(text) {
+                    return `<p class="mb-2 text-lg">${text}</p>`;
+                },
+                list(body, ordered) {
+                    const tag = ordered ? 'ol' : 'ul';
+                    return `<${tag} class="list-${ordered ? 'decimal' : 'disc'} pr-5 space-y-1 text-lg">${body}</${tag}>`;
+                },
+                listitem(text) {
+                    return `<li class="text-lg">${text}</li>`;
+                }
+            };
+
+            if (typeof marked !== 'undefined' && typeof marked.use === 'function') {
+                marked.use({ renderer });
+            } else if (typeof marked !== 'undefined' && typeof marked.Renderer !== 'undefined') {
+                const defaultRenderer = new marked.Renderer();
+                for (const prop in renderer) {
+                    if (renderer.hasOwnProperty(prop)) {
+                        defaultRenderer[prop] = renderer[prop];
+                    }
+                }
+                marked.setOptions({ renderer: defaultRenderer });
+            } else {
+                console.warn("Marked.js is not loaded or is an unsupported version. Markdown rendering might not work as expected.");
+            }
+             // Initial render of chat history after marked.js is ready
+            projectAdvisorModal.addEventListener('transitionend', () => {
+                if (!projectAdvisorModal.classList.contains('hidden')) {
+                    renderChatHistory();
+                }
+            }, { once: true }); // Only run once per open
+        };
+        document.head.appendChild(markedScript);
+
+        // Initialize chat history display when modal opens
+        function renderChatHistory() {
+            advisorChatHistoryDiv.innerHTML = '';
+            // Add initial welcome message only if chat history is empty
+            if (chatHistory.length === 0) {
+                const initialMessageText = 'שלום! אני יועץ המוצר המתקדם של ח.סבן חומרי בניין. איך אוכל לעזור לך היום? 😊';
+                // Add to chatHistory so LLM sees it in subsequent calls
+                chatHistory.push({ role: "model", parts: [{ text: initialMessageText }] });
+                
+                const initialMessageDiv = document.createElement('div');
+                initialMessageDiv.className = 'chat-message ai';
+                // Use typeAdvisorResponse for the initial message too for consistency and typing effect
+                typeAdvisorResponse(initialMessageDiv, initialMessageText);
+                advisorChatHistoryDiv.appendChild(initialMessageDiv);
+            } else {
+                chatHistory.forEach(msg => {
+                    // Only render messages that are part of the actual conversation history
+                    // (i.e., not the implicit system prompt that's prepended)
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `chat-message ${msg.role}`;
+                    // Ensure text is a string before parsing markdown
+                    messageDiv.innerHTML = marked.parse(String(msg.parts[0].text));
+                    advisorChatHistoryDiv.appendChild(messageDiv);
+                });
+            }
+            advisorChatHistoryDiv.scrollTop = advisorChatHistoryDiv.scrollHeight;
+        }
+
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await populateProductImages(); // Fetch and set images
+            setupFilters();
+            updateCart();
+            typeWriter();
+            renderKeyboard(); // Initial keyboard render
+            // The initial renderChatHistory() will be called when projectAdvisorButton is clicked
+            renderGalleryImages('all'); // Initial render of gallery
+        });
+
+    </script>
 </body>
 </html>
+�
